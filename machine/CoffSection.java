@@ -188,7 +188,11 @@ public class CoffSection {
 	if (!initialized)
 	    initlen = 0;
 	else if (spn == numPages-1)
-	    initlen = size % pageSize;
+	    /** initlen = size % pageSize; 
+	     *  Bug identified by Steven Schlansker 3/20/08
+	     *  Bug fix by Michael Rauser
+	     */
+	    initlen = (size==pageSize) ? pageSize : (size%pageSize);
 	else
 	    initlen = pageSize;
 
