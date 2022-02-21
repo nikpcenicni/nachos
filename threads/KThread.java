@@ -50,8 +50,6 @@ public class KThread {
             readyQueue = ThreadedKernel.scheduler.newThreadQueue(false);
             readyQueue.acquire(this);	 
             
-            this.waitQueue = ThreadedKernel.scheduler.newThreadQueue(false);  
-
             currentThread = this;
             tcb = TCB.currentTCB();
             name = "main";
@@ -282,16 +280,21 @@ public class KThread {
 
         Lib.assertTrue(this != currentThread);
 
-        if (status == statusFinished) return;
+        if (this.status == statusFinished) return;
 
-        boolean status = Machine.interrupt().disable();
-        
+        boolean mStatus = Machine.interrupt().disable();
+               
         this.joined = true;
 
-        this.waitQueue.waitForAccess(currentThread);
+        if (this.waitQueue == null) {
+            this.waitQueue = ThreadedKernel.scheduler.newThreadQueue(false);
+            this.waitQueue.acquire(this);
+        }
+
+        this.waitQueue.waitForAccess(KThread.currentThread());
 
         KThread.sleep();
-        Machine.interrupt().restore(status);
+        Machine.interrupt().restore(mStatus);
      
     }
 
@@ -418,10 +421,69 @@ public class KThread {
      */
     public static void selfTest() {
         Lib.debug(dbgThread, "Enter KThread.selfTest");
-        
+
         new KThread(new PingTest(1)).setName("forked thread").fork();
         new PingTest(0).run();
-        
+
+        System.out.println("\n---------------------------------------------------------");
+        System.out.println("       User KThread SELF TESTS  ");
+        System.out.println("---------------------------------------------------------");
+
+        selfJoinTest();
+
+        joinFinishedThreadTest();
+
+        System.out.println("\n---------------------------------------------------------");
+        System.out.println("       All  KThread SELF TESTS  PASSED  ");
+        System.out.println("---------------------------------------------------------");
+
+    }
+
+    public static void selfJoinTest() {
+        KThread joinee = new KThread();
+        joinee.setName("Joinee");
+        System.out.println("Self join test started.");
+
+        joinee.setTarget(new Runnable() {
+            public void run() {
+                String result = "unsuccesfully";
+                try {
+                    System.out.println("Joining self.");
+                    joinee.join();
+                } catch (Error e) {
+                   result =  "succcesfully.";
+                }
+                System.out.println("Self join completed " + result);
+            }
+        });
+        joinee.fork();
+        joinee.join();
+    }
+
+    public static void joinFinishedThreadTest(){
+        KThread finished = new KThread();
+        finished.setName("Finished Thread");
+        KThread joiner = new KThread();
+        joiner.setName("Joiner Thread");
+
+        finished.setTarget(new Runnable() {
+            public void run() {
+                System.out.println("Finished Thread done running.");
+            }
+        });
+
+        joiner.setTarget(new Runnable() {
+            public void run() {
+                System.out.println("Preparing to join Finished thread.");
+                finished.join();
+            }
+        });
+
+        finished.fork();
+        joiner.fork();
+        joiner.join();
+
+        System.out.println("Finished thread join test completed succesfully.");
     }
 
     private static final char dbgThread = 't';
