@@ -1,5 +1,7 @@
 package nachos.threads;
 
+import java.util.concurrent.locks.Lock;
+
 import nachos.machine.*;
 
 /**
@@ -14,6 +16,12 @@ public class Communicator {
      * Allocate a new communicator.
      */
     public Communicator() {
+        handShake = true;
+        waitToListenQueue = 0;
+        lock = new Lock();
+        waitForHandShake = new Condition2(lock);
+        waitToSpeak = new Condition2(lock);
+        waitToListen = new Condition2(lock);
     }
 
     /**
@@ -27,6 +35,22 @@ public class Communicator {
      * @param	word	the integer to transfer.
      */
     public void speak(int word) {
+        lock.acquire();
+        while(handShake){
+            waitToSpeak.sleep();
+        }
+
+        handShake = true;
+        this.message = (word);
+        while (waitToListen){
+            waitForHandShake.sleep();
+        }
+
+        waitToListen.wake();
+        waitForHandShake.sleep();
+        handShake = false;
+        waitToSpeak.wake();
+        lock.release();
     }
 
     /**
@@ -36,6 +60,26 @@ public class Communicator {
      * @return	the integer transferred.
      */    
     public int listen() {
-	return 0;
+        lock.acquire();
+        waitToListenQueue++;
+
+        if (waitToListenQueue == 1 && handShake)
+            waitForHandShake.wake();
+        
+        waitToListen.sleep();
+        waitForHandShake.wake();
+        waitToListenQueue--;
+        int message = this.message;
+        lock.release();
+        return message;
     }
+
+    private boolean handShake;
+    private int waitToListenQueue;
+    private int message;
+    private Lock lock;
+    private Condition2 waitForHandShake;
+    private Condition2 waitToSpeak;
+    private Condition2 waitToListen;
+
 }
