@@ -4,10 +4,25 @@ import nachos.machine.*;
 
 public class ReactWater{
 
+    // Counting Variables
+    private static int hydrogenCount;
+    private static int oxygenCount;
+    
+    // Lock and Condition Variables
+    Condition2 hydrogenCondition;
+    Condition2 oxygenCondition;
+    Lock lock;
+
     /** 
      *   Constructor of ReactWater
+     *   Default, initializes all data field variables
      **/
     public ReactWater() {
+
+        lock         = new Lock();
+        hydrogenCondition = new Condition2(lock);
+        oxygenCondition   = new Condition2(lock);
+        hydrogenCount = oxygenCount = 0;
 
     } // end of ReactWater()
 
@@ -17,7 +32,23 @@ public class ReactWater{
      *   H element wait in line. 
      **/ 
     public void hReady() {
-    
+
+        lock.acquire();
+        ++hydrogenCount; // add hydrogen count
+
+        // Check for existing H and O elements
+        // If 2 H and 1 O then call MakeWater()
+        if (hydrogenCount == 2 && oxygenCount == 1){
+            hydrogenCondition.wake();
+            oxygenCondition.wake();
+            Makewater();
+            lock.release();
+            return;
+        }
+        // Let H element wait in line
+        else{
+            hydrogenCondition.sleep();
+        }
     } // end of hReady()
  
     /** 
@@ -27,6 +58,22 @@ public class ReactWater{
      **/ 
     public void oReady() {
 
+        lock.acquire();
+        ++oxygenCount; // add oxygen count
+
+        // Check for existing H elements
+        // If 2 H then call MakeWater()
+        if (hydrogenCount == 2){
+            hydrogenCondition.wake();
+            oxygenCondition.wake();
+            Makewater();
+            lock.release();
+            return;
+        }
+        // Let O element wait in line
+        else{
+            oxygenCondition.sleep();
+        }
     } // end of oReady()
     
     /** 
@@ -34,8 +81,12 @@ public class ReactWater{
      **/
     public void Makewater() {
 
+        // Reset counters
+        hydrogenCount -= 2;
+        --oxygenCount;
+
+        System.out.println("Water was made!");
+        
     } // end of Makewater()
 
 } // end of class ReactWater
-
-
