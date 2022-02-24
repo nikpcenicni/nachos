@@ -16,9 +16,9 @@ public class Communicator {
      * Allocate a new communicator.
      */
     public Communicator() {
-        handShake = true;
+        handShake = false;
         waitToListenQueue = 0;
-        lock = new Lock();
+        lock = new nachos.threads.Lock();
         waitForHandShake = new Condition2(lock);
         waitToSpeak = new Condition2(lock);
         waitToListen = new Condition2(lock);
@@ -41,8 +41,8 @@ public class Communicator {
         }
 
         handShake = true;
-        this.message = (word);
-        while (waitToListen){
+        this.message = word;
+        while (waitToListenQueue == 0){
             waitForHandShake.sleep();
         }
 
@@ -69,15 +69,15 @@ public class Communicator {
         waitToListen.sleep();
         waitForHandShake.wake();
         waitToListenQueue--;
-        int message = this.message;
+        int word = this.message;
         lock.release();
-        return message;
+        return word;
     }
 
     private boolean handShake;
     private int waitToListenQueue;
     private int message;
-    private Lock lock;
+    private nachos.threads.Lock lock;
     private Condition2 waitForHandShake;
     private Condition2 waitToSpeak;
     private Condition2 waitToListen;
