@@ -437,6 +437,7 @@ public class KThread {
         selfJoinTest();
         joinFinishedThreadTest();
         nestedJoinTest();
+        multipleThreadJoins();
 
         System.out.println("-------- All KThread Tests Completed --------");
 
@@ -494,6 +495,7 @@ public class KThread {
     public static void nestedJoinTest() {
         System.out.println("Nested Join Test: Starting");
 
+        //create threads to join through secondary thread
         KThread thread1 = new KThread();
         thread1.setName("Joinee");
         KThread thread2 = new KThread();
@@ -512,11 +514,111 @@ public class KThread {
                 thread1.join();
             }
         });
+
+        //start nested thread join
         thread1.fork();
         thread1.join();
         System.out.println("Nested Join Test: Completed successfully");
+    }
 
+    public static void multipleThreadJoins() {
+        System.out.println("Multiple Threads Join Test: Started");
 
+        KThread thread1 = new KThread();
+        KThread thread2 = new KThread();
+        KThread thread3 = new KThread();
+        KThread thread4 = new KThread();
+        KThread thread5 = new KThread();
+        thread1.setName("Thread 1");
+        thread2.setName("Thread 2");
+        thread3.setName("Thread 3");
+        thread4.setName("Thread 4");
+        thread5.setName("Thread 5");
+
+        KThread joinThread1 = new KThread();
+        KThread joinThread2 = new KThread();
+        KThread joinThread3 = new KThread();
+        KThread joinThread4 = new KThread();
+        KThread joinThread5 = new KThread();
+        joinThread1.setName("Join Thread 1");
+        joinThread2.setName("Join Thread 2");
+        joinThread3.setName("Join Thread 3");
+        joinThread4.setName("Join Thread 4");
+        joinThread5.setName("Join Thread 5");
+       
+        thread1.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Threads Join Test: " + thread1.getName() + " joining " + joinThread1.getName());
+                joinThread1.fork();
+                joinThread1.join();
+            }
+        });
+        thread2.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Threads Join Test: " + thread2.getName() + " joining " + joinThread2.getName());
+                joinThread2.fork();
+                joinThread2.join();
+            }
+        });
+        thread3.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Threads Join Test: " + thread3.getName() + " joining " + joinThread3.getName());
+                joinThread3.fork();
+                joinThread3.join();
+            }
+        });
+        thread4.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Threads Join Test: " + thread4.getName() + " joining " + joinThread4.getName());
+                joinThread4.fork();
+                joinThread4.join();
+            }
+        });
+        thread5.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Threads Join Test: " + thread5.getName() + " joining " + joinThread5.getName());
+                joinThread5.fork();
+                joinThread5.join();
+            }
+        });
+
+        joinThread1.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Threads Join Test: " + joinThread1.getName() + " running");
+            }
+        });
+        joinThread2.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Threads Join Test: " + joinThread2.getName() + " running");
+            }
+        });
+        joinThread3.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Threads Join Test: " + joinThread3.getName() + " running");
+            }
+        });
+        joinThread4.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Threads Join Test: " + joinThread4.getName() + " running");
+            }
+        });
+        joinThread5.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Threads Join Test: " + joinThread5.getName() + " running");
+            }
+        });
+
+        thread1.fork();
+        thread1.join();
+        thread2.fork();
+        thread2.join();
+        thread3.fork();
+        thread3.join();
+        thread4.fork();
+        thread4.join();
+        thread5.fork();
+        thread5.join();
+        System.out.println("Multiple Threads Join Test: Completed successfully");
     }
 
     
