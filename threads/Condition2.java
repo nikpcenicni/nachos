@@ -98,20 +98,20 @@ public class Condition2 {
        
        KThread sleep = new KThread(new Runnable()
        {
-    //Test 1: Sleep
-      public void run()
-       {
-    	  //get the Lock
-    	   lock.acquire();
-    	   
-    	   System.out.println("TESTING SLEEP"); 
-    	   System.out.println("Test 1:\n...Going to sleep.....\n");
-    	   con2.sleep();
-    	   System.out.println("Test 1 Complete: Woke up!\n");
-    	   lock.release();
-       }
-       
-    });
+		//Test 1: Sleep
+		public void run()
+		{
+			//get the Lock
+			lock.acquire();
+			
+			System.out.println("TESTING SLEEP"); 
+			System.out.println("Test 1:\n...Going to sleep.....\n");
+			con2.sleep();
+			System.out.println("Test 1 Complete: Woke up!\n");
+			lock.release();
+		}
+		
+		});
        
        sleep.fork();
       

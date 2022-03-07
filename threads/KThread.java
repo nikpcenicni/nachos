@@ -1,6 +1,7 @@
 package nachos.threads;
 
 import nachos.machine.*;
+import java.util.ArrayList;
 
 /**
  * A KThread is a thread that can be used to execute Nachos kernel code. Nachos
@@ -281,6 +282,7 @@ public class KThread {
         Lib.assertTrue(this != currentThread);
 
         if (this.status == statusFinished) return;
+        else if (currentThread.usedID.contains(this.id)) return;
 
         boolean mStatus = Machine.interrupt().disable();
                
@@ -289,6 +291,11 @@ public class KThread {
         if (this.waitQueue == null) {
             this.waitQueue = ThreadedKernel.scheduler.newThreadQueue(false);
             this.waitQueue.acquire(this);
+        }
+
+        this.usedID.add(currentThread.id);
+        for(int i = 0; i < currentThread.usedID.size(); i++){
+            this.usedID.add(currentThread.usedID.get(i));
         }
 
         this.waitQueue.waitForAccess(KThread.currentThread());
@@ -425,35 +432,31 @@ public class KThread {
         new KThread(new PingTest(1)).setName("forked thread").fork();
         new PingTest(0).run();
 
-        System.out.println("\n---------------------------------------------------------");
-        System.out.println("       User KThread SELF TESTS  ");
-        System.out.println("---------------------------------------------------------");
-
+        System.out.println("------------ KThread Self Tests -------------");
+      
         selfJoinTest();
-
         joinFinishedThreadTest();
+        nestedJoinTest();
 
-        System.out.println("\n---------------------------------------------------------");
-        System.out.println("       All  KThread SELF TESTS  PASSED  ");
-        System.out.println("---------------------------------------------------------");
+        System.out.println("-------- All KThread Tests Completed --------");
 
     }
 
     public static void selfJoinTest() {
         KThread joinee = new KThread();
         joinee.setName("Joinee");
-        System.out.println("Self join test started.");
+        System.out.println("Self Join Test: Started");
 
         joinee.setTarget(new Runnable() {
             public void run() {
                 String result = "unsuccesfully";
                 try {
-                    System.out.println("Joining self.");
+                    System.out.println("Self Join Test: Joining self");
                     joinee.join();
                 } catch (Error e) {
-                   result =  "succcesfully.";
+                   result =  "succcesfully";
                 }
-                System.out.println("Self join completed " + result);
+                System.out.println("Self Join Test: Completed " + result);
             }
         });
         joinee.fork();
@@ -461,6 +464,7 @@ public class KThread {
     }
 
     public static void joinFinishedThreadTest(){
+        System.out.println("Finished Thread Join Test: Starting");
         KThread finished = new KThread();
         finished.setName("Finished Thread");
         KThread joiner = new KThread();
@@ -468,13 +472,13 @@ public class KThread {
 
         finished.setTarget(new Runnable() {
             public void run() {
-                System.out.println("Finished Thread done running.");
+                System.out.println("Finished Thread Join Test: Finished thread done running");
             }
         });
 
         joiner.setTarget(new Runnable() {
             public void run() {
-                System.out.println("Preparing to join Finished thread.");
+                System.out.println("Finished Thread Join Test: Preparing to join finished thread");
                 finished.join();
             }
         });
@@ -483,9 +487,39 @@ public class KThread {
         joiner.fork();
         joiner.join();
 
-        System.out.println("Finished thread join test completed succesfully.");
+        System.out.println("Finished Thread Join Test: Completed succesfully");
     }
 
+    // test if thread is able to join itself through another thread
+    public static void nestedJoinTest() {
+        System.out.println("Nested Join Test: Starting");
+
+        KThread thread1 = new KThread();
+        thread1.setName("Joinee");
+        KThread thread2 = new KThread();
+        thread2.setName("Joiner");
+
+        thread1.setTarget(new Runnable() {
+            public void run() {
+                System.out.println("Nested Join Test: Join thread 2 from thread 1");
+                thread2.fork();
+                thread2.join();
+            }
+        });
+        thread2.setTarget(new Runnable() {
+            public void run() {
+                System.out.println("Nested Join Test: Join thread 1 from thread 2");
+                thread1.join();
+            }
+        });
+        thread1.fork();
+        thread1.join();
+        System.out.println("Nested Join Test: Completed successfully");
+
+
+    }
+
+    
     private static final char dbgThread = 't';
 
     /**
@@ -521,6 +555,7 @@ public class KThread {
     private static int numCreated = 0;
 
     private ThreadQueue waitQueue = null;
+    private ArrayList<Integer> usedID = new ArrayList<Integer>();
 
     private boolean joined = false;
 

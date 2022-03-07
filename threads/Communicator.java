@@ -2,6 +2,8 @@ package nachos.threads;
 
 import java.util.concurrent.locks.Lock;
 
+import javax.xml.bind.Marshaller.Listener;
+
 import nachos.machine.*;
 
 /**
@@ -72,6 +74,24 @@ public class Communicator {
         int word = this.message;
         lock.release();
         return word;
+    }
+
+        /**
+     * Tests whether this module is working.
+     */
+    public static void selfTest() {
+        //Lib.debug("C", "Enter KThread.selfTest");
+
+        
+
+        
+    }
+    public static void listenerWaitTest(){
+        System.out.println("Listener Wait Test: Starting");
+        Communicator speaker = new Communicator();
+
+        speaker.speak(101);
+
     }
 
     private boolean handShake;
