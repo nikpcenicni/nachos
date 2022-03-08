@@ -80,19 +80,244 @@ public class Communicator {
      * Tests whether this module is working.
      */
     public static void selfTest() {
+        System.out.println("------------ Communicator Self Tests -------------");
         //Lib.debug("C", "Enter KThread.selfTest");
 
-        
+        speakerWaitTest();
+        listenerWaitTest();
+        multipleSpeakersWaitTest();
+        multipleListenersWaitTest();
+
+        System.out.println("-------- All Communicator Tests Completed --------");
 
         
     }
+    public static void speakerWaitTest(){
+        System.out.println("Speaker Wait Test: Starting");
+        Communicator speaker = new Communicator();
+
+        KThread thread1 = new KThread();
+        thread1.setName("Thread 1");
+        thread1.setTarget(new Runnable(){
+            public void run() {
+                speaker.speak(101);
+            }
+        });
+
+        KThread thread2 = new KThread();
+        thread2.setName("Thread 2");
+        thread2.setTarget(new Runnable() {
+            public void run() {
+                System.out.println("Speaker Wait Test: " + thread2.getName() + " listening to " + thread1.getName() + " and heard " + speaker.listen());
+            }
+        });
+
+        thread1.fork();
+        thread2.fork();
+        thread1.join();
+        System.out.println("Speaker Wait Test: Completed successfully");
+    }
+
     public static void listenerWaitTest(){
         System.out.println("Listener Wait Test: Starting");
         Communicator speaker = new Communicator();
 
-        speaker.speak(101);
+        KThread thread1 = new KThread();
+        thread1.setName("Thread 1");
+
+        KThread thread2 = new KThread();
+        thread2.setName("Thread 2");
+
+
+        thread1.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Speaker Wait Test: " + thread1.getName() + " listening to " + thread2.getName() + " and heard " + speaker.listen());
+            }
+     
+        });
+
+        thread2.setTarget(new Runnable() {
+            public void run() {
+                speaker.speak(1000);
+            }
+        });
+
+        thread1.fork();
+        thread2.fork();
+        thread2.join();
+        System.out.println("Listener Wait Test: Completed successfully");
+    }
+
+    public static void multipleSpeakersWaitTest() {
+        System.out.println("Multiple Speakers Wait Test: Started");
+        Communicator speaker = new Communicator();
+
+        KThread thread1 = new KThread();
+        thread1.setName("Thread 1");
+        KThread thread2 = new KThread();
+        thread2.setName("Thread 2");
+        KThread thread3 = new KThread();
+        thread3.setName("Thread 3");
+        KThread thread4 = new KThread();
+        thread4.setName("Thread 4");
+        KThread thread5 = new KThread();
+        thread5.setName("Thread 5");
+        KThread thread6 = new KThread();
+        thread6.setName("Thread 6");
+        KThread thread7 = new KThread();
+        thread7.setName("Thread 7");
+        KThread thread8 = new KThread();
+        thread8.setName("Thread 8");
+
+
+        thread1.setTarget(new Runnable(){
+            public void run() {
+                speaker.speak(1);
+            }
+        });
+
+        thread2.setTarget(new Runnable(){
+            public void run() {
+                speaker.speak(10);
+            }
+        });
+
+        thread3.setTarget(new Runnable(){
+            public void run() {
+                speaker.speak(11);
+            }
+        });
+
+        thread4.setTarget(new Runnable(){
+            public void run() {
+                speaker.speak(100);
+            }
+        });
+
+        thread5.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Speakers Wait Test: " + thread5.getName() + " listening to " + thread1.getName() + " and heard " + speaker.listen());
+            }
+        });
+        thread6.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Speakers Wait Test: " + thread6.getName() + " listening to " + thread2.getName() + " and heard " + speaker.listen());
+            }
+        });
+        thread7.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Speakers Wait Test: " + thread7.getName() + " listening to " + thread3.getName() + " and heard " + speaker.listen());
+            }
+        });
+        thread8.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Speakers Wait Test: " + thread8.getName() + " listening to " + thread4.getName() + " and heard " + speaker.listen());
+            }
+        });
+
+        thread1.fork();
+        thread2.fork();
+        thread3.fork();
+        thread4.fork();
+        thread5.fork();
+        thread6.fork();
+        thread7.fork();
+        thread8.fork();
+
+        thread1.join();
+        thread2.join();
+        thread3.join();
+        thread4.join();
+
+        System.out.println("Multiple Speakers Wait Test: Started");
+    }
+
+    public static void multipleListenersWaitTest() {
+        System.out.println("Multiple Listeners Wait Test: Started");
+        Communicator speaker = new Communicator();
+
+        KThread thread1 = new KThread();
+        thread1.setName("Thread 1");
+        KThread thread2 = new KThread();
+        thread2.setName("Thread 2");
+        KThread thread3 = new KThread();
+        thread3.setName("Thread 3");
+        KThread thread4 = new KThread();
+        thread4.setName("Thread 4");
+        KThread thread5 = new KThread();
+        thread5.setName("Thread 5");
+        KThread thread6 = new KThread();
+        thread6.setName("Thread 6");
+        KThread thread7 = new KThread();
+        thread7.setName("Thread 7");
+        KThread thread8 = new KThread();
+        thread8.setName("Thread 8");
+
+        thread1.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Listeners Wait Test: " + thread1.getName() + " listening to " + thread5.getName() + " and heard " + speaker.listen());
+            }
+        });
+        thread2.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Listeners Wait Test: " + thread2.getName() + " listening to " + thread6.getName() + " and heard " + speaker.listen());
+            }
+        });
+        thread3.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Listeners Wait Test: " + thread3.getName() + " listening to " + thread7.getName() + " and heard " + speaker.listen());
+            }
+        });
+        thread4.setTarget(new Runnable(){
+            public void run() {
+                System.out.println("Multiple Listeners Wait Test: " + thread4.getName() + " listening to " + thread8.getName() + " and heard " + speaker.listen());
+            }
+        });
+
+        thread5.setTarget(new Runnable(){
+            public void run() {
+                speaker.speak(1);
+            }
+        });
+
+        thread6.setTarget(new Runnable(){
+            public void run() {
+                speaker.speak(10);
+            }
+        });
+
+        thread7.setTarget(new Runnable(){
+            public void run() {
+                speaker.speak(11);
+            }
+        });
+
+        thread8.setTarget(new Runnable(){
+            public void run() {
+                speaker.speak(100);
+            }
+        });
+
+        thread1.fork();
+        thread2.fork();
+        thread3.fork();
+        thread4.fork();
+        thread5.fork();
+        thread6.fork();
+        thread7.fork();
+        thread8.fork();
+
+        thread1.join();
+        thread2.join();
+        thread3.join();
+        thread4.join();
+
+        System.out.println("Multiple Listeners Wait Test: Started");
 
     }
+
+
+
 
     private boolean handShake;
     private int waitToListenQueue;
