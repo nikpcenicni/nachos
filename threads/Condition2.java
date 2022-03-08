@@ -89,7 +89,8 @@ public class Condition2 {
 
 	public static void selfTest(){    
 		Test1();
-		//Test2();
+		Test2();
+		new Test3();
 	}
 	
 	public static void Test1(){
@@ -119,22 +120,7 @@ public class Condition2 {
 	    System.out.print("\n Terminating Condition2 Test 1 by releasing Locks. \n\n");	
 
 	    threads[9].join();
-	    
-
-//		System.out.print("\nCommencing Condition2 Test 2: Empty Queue \n\n");
-//		KThread threads[] = new KThread[10];
-//	    lock.acquire();
-//	    System.out.print("------------Testing wake on Empty------------\n");	
-//	    condition.wake();
-//	    System.out.print("------------Wake Successful------------\n");
-//	    System.out.print("------------Testing wakeAll on Empty------------\n");	
-//	    condition.wakeAll();
-//	    System.out.print("------------Wakeall Successful------------\n");
-//	    lock.release();
-//	    System.out.print("\n Terminating Condition2 Test 1 by releasing Locks. \n\n");	
-//
-//		
-//		
+	    System.out.print("\n Condition2 Test 1: Successful \n\n");
 
 	}
 	
@@ -159,11 +145,89 @@ public class Condition2 {
 
 	public static void Test2(){
 		
-		System.out.print("\nCommencing Condition2 Test 2: Empty Queue \n\n");
+		System.out.print("\nCommencing Condition2 Test 2: Context Switching \n\n");
 		Lock lock = new Lock();
-	    Condition2 condition = new Condition2(lock); 
+	    Condition2 cond = new Condition2(lock); 
 	    
+	    LinkedList<Integer> intList = new LinkedList<>();
+	    
+	    KThread consumer = new KThread( new Runnable () {
+            public void run() {
+                lock.acquire();
+                while(intList.isEmpty()){
+                    cond.sleep();
+                }
+                System.out.print("\nEnsuring list size = 5\n");	
+                Lib.assertTrue(intList.size() == 5);
+                System.out.print("\nList size = 5\n");	
+                
+                while(!intList.isEmpty()) {
+                    KThread.yield();
+                    System.out.println("Thread: " + intList.removeFirst() + " was Removed");
+                }
+                lock.release();
+            }
+        });
+
+        KThread producer = new KThread( new Runnable () {
+            public void run() {
+                lock.acquire();
+                for (int i = 0; i < 5; i++) {
+                    intList.add(i);
+                    System.out.println("Thread: " + i + " was Added");
+                    KThread.yield();
+                }
+                cond.wake();
+                lock.release();
+            }
+        });
+
+        consumer.setName("Consumer");
+        producer.setName("Producer");
+
+        consumer.fork();
+        producer.fork();
+        
+        consumer.join();
+        System.out.print("\nTerminating Condition2 Test 2 \n\n");	
+        producer.join();
+        
+        System.out.print("\nCondition2 Test 2: Successful \n\n");
+    }
 	   
+	private static class Test3{
+		
+		private static Lock lock;
+		private static Condition2 cond;
+		
+		private static class pingTester implements Runnable{
+			public void run(){
+				lock.acquire();
+				for (int i = 0; i < 10; i++) {
+					System.out.println(KThread.currentThread().getName());
+					cond.wake();   // signal
+					cond.sleep();  // wait
+				}
+				lock.release();
+			}
+		}
+		
+		public Test3(){
+			System.out.print("\nCommencing Condition2 Test 3: InterLocked Processes \n\n");
+			lock = new Lock();
+			cond = new Condition2(lock);
+
+			KThread ping = new KThread(new pingTester());
+			ping.setName("ping");
+			KThread pong = new KThread(new pingTester());
+			pong.setName("pong");
+
+			ping.fork();
+			pong.fork();
+
+			for (int i = 0; i < 50; i++) { KThread.currentThread().yield(); }
+			System.out.print("\nCondition2 Test 3: Successful \n\n");
+		}
 	}
 	
 	
