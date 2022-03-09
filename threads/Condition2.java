@@ -151,7 +151,7 @@ public class Condition2 {
 	 */
 	public static void Test2(){
 		
-		System.out.print("\nCommencing Condition2 Test 2: Context Switching \n\n");
+		System.out.print("\nCondition2 Test 2: Context Switching \n\n");
 		Lock lock = new Lock();
 	    Condition2 cond = new Condition2(lock); 
 	    
@@ -163,13 +163,13 @@ public class Condition2 {
                 while(intList.isEmpty()){
                     cond.sleep();
                 }
-                System.out.print("\nEnsuring list size = 50\n");	
+                System.out.print("\nCondition2 Test 2: Ensuring list size = 50\n");	
                 Lib.assertTrue(intList.size() == 50);
-                System.out.print("\nList size = 50\n");	
+                System.out.print("\nCondition2 Test 2: List size = 50\n");	
                 
                 while(!intList.isEmpty()) {
                     KThread.yield();
-                    System.out.println("Thread: " + intList.removeFirst() + " was Removed");
+                    System.out.println("Condition2 Test 2: Thread " + intList.removeFirst() + " was removed");
                 }
                 lock.release();
             }
@@ -180,7 +180,7 @@ public class Condition2 {
                 lock.acquire();
                 for (int i = 0; i < 50; i++) {
                     intList.add(i);
-                    System.out.println("Thread: " + i + " was Added");
+                    System.out.println("Commencing Condition2 Test 2:Thread: " + i + " was Added");
                     KThread.yield();
                 }
                 cond.wake();
@@ -197,10 +197,10 @@ public class Condition2 {
         //Wait until all processes finish execution
         
         consumer.join();
-        System.out.print("\nTerminating Condition2 Test 2 \n\n");	
+        System.out.print("\nCondition2 Test 2: Terminating ondition2 Test 2 \n\n");	
         producer.join();
         
-        System.out.print("\nCondition2 Test 2: Successful \n\n");
+        System.out.print("\nCondition2 Test 2: Completed successfully\n");
     }
 	
 	/*

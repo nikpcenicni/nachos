@@ -109,7 +109,7 @@ public class ReactWater{
 	 * A method to test the ReactWater() class
 	 */
 	public static void test1() {
-		System.out.println("React Water Test 1: Starting");
+		System.out.println("\nReact Water Test 1: Starting");
 		/* Variable Initialization */
 		ReactWater reactWaterTest    = new ReactWater(); // ReactWater object for testing
 		KThread hydrogen0            = new KThread();    // 2 Hydrogen kthreads for testing
@@ -145,7 +145,7 @@ public class ReactWater{
 		hydrogen1.fork();
 		oxygen0.fork();
 		oxygen0.join();
-		System.out.println("React Water Test 1: Completed successfully");
+		System.out.println("React Water Test 1: Completed successfully\n");
 	} // end of test1()
 	
 	/**
@@ -220,7 +220,7 @@ public class ReactWater{
 		oxygen3.fork();
 		oxygen0.join();
 
-		System.out.println("React Water Test 2: Completed successfully");
+		System.out.println("React Water Test 2: Completed successfully\n");
 	} // end of test2()
 	
 	
@@ -285,7 +285,7 @@ public class ReactWater{
 		hydrogen3.fork();
 		oxygen0.fork();
 		oxygen0.join();
-		System.out.println("React Water Test 3: Completed successfully");
+		System.out.println("React Water Test 3: Completed successfully\n");
 	} // end of test3()
 	
 	
@@ -413,7 +413,7 @@ public class ReactWater{
 		oxygen1.join();
 		oxygen2.join();
 		
-		System.out.println("React Water Test 4: Completed successfully");
+		System.out.println("React Water Test 4: Completed successfully\n");
 	} // end of test4()
 
 } // end of class ReactWater
