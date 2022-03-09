@@ -56,14 +56,11 @@ public class Alarm {
      * @see	nachos.machine.Timer#getTime()
      */
     public void waitUntil(long x) {
-    	if(x <= 0){
-    		return;
-    	}
-    	
+    
 	// for now, cheat just to get something working (busy waiting is bad)
 	long wakeTime = Machine.timer().getTime() + x;
 	
-	boolean intStatus = Machine.interrupt().disabled();
+	boolean intStatus = Machine.interrupt().disable();
 	
 	waitQueue.add(new waitThread(wakeTime, KThread.currentThread()));
 	
@@ -102,6 +99,87 @@ public class Alarm {
 		public KThread thread(){
 			return thread;
 		}
+	}
+
+	public static void selfTest(){
+		
+		System.out.println();
+		System.out.println("------------ Alarm Self Tests -------------\n");
+		test1();
+		test2();
+		test3();
+		test4();
+		System.out.println();
+		System.out.println("------------ All Alarm Tests Completed -------------\n");
+	
+	}
+	
+	private static void test1(){
+		Alarm tester = new Alarm();
+		KThread thread = new KThread();
+		thread.setTarget(new Runnable() { 
+			public void run() {  
+				System.out.println("Test 1 - Large Delay (100): Starting");
+				long time = Machine.timer().getTime();
+				tester.waitUntil(100);	
+				long waitTime = Machine.timer().getTime() - time;
+				System.out.println("Test 1: Complete. Wait Time: " + waitTime);
+				System.out.println();	
+			}
+		});
+		thread.fork();
+		thread.join();
+	}
+	
+	private static void test2(){
+		Alarm tester = new Alarm();
+		KThread thread = new KThread();
+		thread.setTarget(new Runnable() { 
+			public void run() {  
+				System.out.println("Test 2 - Small Delay (10): Starting");
+				long time = Machine.timer().getTime();
+				tester.waitUntil(10);	
+				long waitTime = Machine.timer().getTime() - time;
+				System.out.println("Test 2: Complete. Wait Time: " + waitTime);
+				System.out.println();	
+			}
+		});
+		thread.fork();
+		thread.join();
+	}
+
+	private static void test3(){
+		Alarm tester = new Alarm();
+		KThread thread = new KThread();
+		thread.setTarget(new Runnable() { 
+			public void run() {  
+				System.out.println("Test 3 - Very Large Delay (1000): Starting");
+				long time = Machine.timer().getTime();
+				tester.waitUntil(1000);	
+				long waitTime = Machine.timer().getTime() - time;
+				System.out.println("Test 3: Complete. Wait Time: " + waitTime);	
+				System.out.println();
+			}
+		});
+		thread.fork();
+		thread.join();
+	}
+	
+	private static void test4(){
+		Alarm tester = new Alarm();
+		KThread thread = new KThread();
+		thread.setTarget(new Runnable() { 
+			public void run() {  
+				System.out.println("Test 4 - Very Small Delay (1): Starting");
+				long time = Machine.timer().getTime();
+				tester.waitUntil(1);	
+				long waitTime = Machine.timer().getTime() - time;
+				System.out.println("Test 4: Complete. Wait Time: " + waitTime);
+				System.out.println();	
+			}
+		});
+		thread.fork();
+		thread.join();
 	}
 	
 	java.util.PriorityQueue<waitThread> waitQueue = new java.util.PriorityQueue<waitThread>();
