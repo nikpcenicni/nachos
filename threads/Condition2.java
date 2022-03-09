@@ -79,11 +79,13 @@ public class Condition2 {
 	/*
 	 * Invoked by the ThreadedKernel class to ensure correct implementation
 	 */
-	public static void selfTest(){    
+	public static void selfTest(){  
+		System.out.println("------------ Condition2 Self Tests -------------");  
 		Test1();
 		Test2();
 		new Test3();
 		//Test4();
+		System.out.println("------------ Condition2 Self Tests Completed -------------");
 	}
 	
 	/*
@@ -92,7 +94,7 @@ public class Condition2 {
 	 */
 	public static void Test1(){
 		
-		System.out.print("\nCommencing Condition2 Test 1: Sleep & Wake \n\n");
+		System.out.println("Commencing Condition2 Test 1: Starting Sleep & Wake \n");
 		Lock lock = new Lock();
 	    Condition2 condition = new Condition2(lock); 
 
@@ -106,18 +108,18 @@ public class Condition2 {
 	    
 	    lock.acquire();
 
-	    System.out.print("------------Testing wake------------\n");	
+	    System.out.println("Condition2 Test 1:\tTesting wake");	
 	    condition.wake();
-	    System.out.print("------------Wake Successful------------\n");
-	    System.out.print("------------Testing wakeAll------------\n");	
+	    System.out.println("Condition2 Test 1:\tWake successful");	
+	    System.out.println("Condition2 Test 1:\tTesting wakeall");		
 	    condition.wakeAll();
-	    System.out.print("------------Wakeall Successful------------\n");
+	    System.out.println("Condition2 Test 1:\tWakeall successful");	
 	    lock.release();
 
-	    System.out.print("\n Terminating Condition2 Test 1 by releasing Locks. \n\n");	
+	    System.out.print("\nCondition2 Test 1: Releasing Locks. \n\n");	
 
 	    threads[9].join(); // wait until threads terminate
-	    System.out.print("\n Condition2 Test 1: Successful \n\n");
+	    System.out.print("\nCondition2 Test 1: Successful \n\n");
 
 	}
 	
@@ -132,11 +134,11 @@ public class Condition2 {
 		
 		public void run() {
 	        lock.acquire();
-	        System.out.print("Acquired lock on: " + KThread.currentThread().getName() + "\n");	
+	        System.out.print("Condition2 Test 1: Acquired lock on " + KThread.currentThread().getName() + "\n");	
 	        condition.sleep();
-	        System.out.print("Lock Acquired for Release on: " +KThread.currentThread().getName() + "\n");	
+	        System.out.print("Condition2 Test 1: Lock Acquired for Release on " +KThread.currentThread().getName() + "\n");	
 	        lock.release();
-	        System.out.print("Released lock on: " +KThread.currentThread().getName() + "\n");	
+	        System.out.print("Condition2 Test 1: Released lock on " +KThread.currentThread().getName() + "\n");	
 		}
 
 	    private Lock lock; 
