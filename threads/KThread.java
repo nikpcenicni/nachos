@@ -277,32 +277,36 @@ public class KThread {
      * thread.
      */
     public void join() {
+        //default calls
         Lib.debug(dbgThread, "Joining to thread: " + toString());
-
         Lib.assertTrue(this != currentThread);
 
+        // check if the thread that is being joine has already completed or if it has already been joined
         if (this.status == statusFinished) return;
         else if (currentThread.usedID.contains(this.id)) return;
 
+        // stores the machine state and disabled the interupts to be restored later
         boolean mStatus = Machine.interrupt().disable();
                
-        this.joined = true;
-
+        //  check if the wait queue is not initalized and creates a new queue for waiting threads.
         if (this.waitQueue == null) {
             this.waitQueue = ThreadedKernel.scheduler.newThreadQueue(false);
             this.waitQueue.acquire(this);
         }
 
+        // store that this thread has been joined and its id to prevent it from being joined through another thread
         this.usedID.add(currentThread.id);
+        this.joined = true;
         for(int i = 0; i < currentThread.usedID.size(); i++){
             this.usedID.add(currentThread.usedID.get(i));
         }
 
+        // add the thread to the wait queue to wait until it can be processed 
         this.waitQueue.waitForAccess(KThread.currentThread());
 
+        // set the thread to sleep and restore the machine status stored earlier
         KThread.sleep();
         Machine.interrupt().restore(mStatus);
-     
     }
 
     /**
@@ -427,11 +431,13 @@ public class KThread {
      * Tests whether this module is working.
      */
     public static void selfTest() {
+        //default self test code
         Lib.debug(dbgThread, "Enter KThread.selfTest");
 
         new KThread(new PingTest(1)).setName("forked thread").fork();
         new PingTest(0).run();
 
+        // custom test code
         System.out.println("------------ KThread Self Tests -------------");
       
         selfJoinTest();
@@ -443,11 +449,16 @@ public class KThread {
 
     }
 
+    /**
+     * Test if the thread is not able to join itself
+     */
     public static void selfJoinTest() {
+        // creates thread to attempt to join itself
         KThread joinee = new KThread();
         joinee.setName("Joinee");
         System.out.println("Self Join Test: Started");
 
+        // set the threads target to itself so on fork it will attempt to join itself and print a message if it is unable to join itself
         joinee.setTarget(new Runnable() {
             public void run() {
                 String result = "unsuccesfully";
@@ -460,23 +471,30 @@ public class KThread {
                 System.out.println("Self Join Test: Completed " + result);
             }
         });
+        // kick off the thread and join it to watch what happens
         joinee.fork();
         joinee.join();
     }
 
+    /**
+     * Tests if a thread is able to join another thread that has already been completed 
+     */
     public static void joinFinishedThreadTest(){
+        // create 2 threads one that will join the other, and one that will finish before being joined 
         System.out.println("Finished Thread Join Test: Starting");
         KThread finished = new KThread();
         finished.setName("Finished Thread");
         KThread joiner = new KThread();
         joiner.setName("Joiner Thread");
 
+        // Run the finished thread 
         finished.setTarget(new Runnable() {
             public void run() {
                 System.out.println("Finished Thread Join Test: Finished thread done running");
             }
         });
 
+        // join the finished thread from the joiner thread 
         joiner.setTarget(new Runnable() {
             public void run() {
                 System.out.println("Finished Thread Join Test: Preparing to join finished thread");
@@ -484,6 +502,7 @@ public class KThread {
             }
         });
 
+        // start the threads and join the joiner to see the results 
         finished.fork();
         joiner.fork();
         joiner.join();
@@ -501,6 +520,7 @@ public class KThread {
         KThread thread2 = new KThread();
         thread2.setName("Joiner");
 
+        // set the first thread to start the second thread and join the second thread
         thread1.setTarget(new Runnable() {
             public void run() {
                 System.out.println("Nested Join Test: Join thread 2 from thread 1");
@@ -508,6 +528,7 @@ public class KThread {
                 thread2.join();
             }
         });
+        // set the second thread to join the first thread, no need for fork as it is already running
         thread2.setTarget(new Runnable() {
             public void run() {
                 System.out.println("Nested Join Test: Join thread 1 from thread 2");
@@ -521,9 +542,15 @@ public class KThread {
         System.out.println("Nested Join Test: Completed successfully");
     }
 
+    /**
+     * Create multiple threads that will be joined and multiple threads to join
+     * this will act as a performance test to see how it is able to handle multiple
+     * threads being joined simitaneously 
+     */
     public static void multipleThreadJoins() {
         System.out.println("Multiple Threads Join Test: Started");
 
+        // create 5 threads that will join the other threads 
         KThread thread1 = new KThread();
         KThread thread2 = new KThread();
         KThread thread3 = new KThread();
@@ -535,6 +562,7 @@ public class KThread {
         thread4.setName("Thread 4");
         thread5.setName("Thread 5");
 
+        // create 5 threads that will be joined 
         KThread joinThread1 = new KThread();
         KThread joinThread2 = new KThread();
         KThread joinThread3 = new KThread();
@@ -545,7 +573,8 @@ public class KThread {
         joinThread3.setName("Join Thread 3");
         joinThread4.setName("Join Thread 4");
         joinThread5.setName("Join Thread 5");
-       
+
+       // set the 5 threads to join their respective join thread.
         thread1.setTarget(new Runnable(){
             public void run() {
                 System.out.println("Multiple Threads Join Test: " + thread1.getName() + " joining " + joinThread1.getName());
@@ -582,6 +611,7 @@ public class KThread {
             }
         });
 
+        // set the 5 join threads target to print that they are running
         joinThread1.setTarget(new Runnable(){
             public void run() {
                 System.out.println("Multiple Threads Join Test: " + joinThread1.getName() + " running");
@@ -608,6 +638,7 @@ public class KThread {
             }
         });
 
+        // start and join the 5 threads that are joining the other threads
         thread1.fork();
         thread1.join();
         thread2.fork();

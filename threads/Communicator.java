@@ -76,26 +76,29 @@ public class Communicator {
         return word;
     }
 
-        /**
+    /**
      * Tests whether this module is working.
      */
     public static void selfTest() {
         System.out.println("------------ Communicator Self Tests -------------");
-        //Lib.debug("C", "Enter KThread.selfTest");
-
+    
         speakerWaitTest();
         listenerWaitTest();
         multipleSpeakersWaitTest();
         multipleListenersWaitTest();
 
-        System.out.println("-------- All Communicator Tests Completed --------");
-
-        
+        System.out.println("-------- All Communicator Tests Completed --------"); 
     }
+    
+    /**
+     * Tests if a speaker will wait for the listener to recieve the message
+     */
     public static void speakerWaitTest(){
         System.out.println("Speaker Wait Test: Starting");
+        // create a new communicator object for passing the message
         Communicator speaker = new Communicator();
 
+        // create a new thread and have it send the message 101 
         KThread thread1 = new KThread();
         thread1.setName("Thread 1");
         thread1.setTarget(new Runnable(){
@@ -104,6 +107,7 @@ public class Communicator {
             }
         });
 
+        // create a new thread as the listener and have it listen to the message from thread 1
         KThread thread2 = new KThread();
         thread2.setName("Thread 2");
         thread2.setTarget(new Runnable() {
@@ -112,46 +116,60 @@ public class Communicator {
             }
         });
 
+        // fork and join the threads
         thread1.fork();
         thread2.fork();
         thread1.join();
         System.out.println("Speaker Wait Test: Completed successfully");
     }
 
+    /**
+     * Test to see if the listener will wait for the speaker to send a message
+     */
     public static void listenerWaitTest(){
         System.out.println("Listener Wait Test: Starting");
+        
+        // create a new communicator object called speaker
         Communicator speaker = new Communicator();
 
+
+        // create 2 new threads for speaking and listening.
         KThread thread1 = new KThread();
         thread1.setName("Thread 1");
 
         KThread thread2 = new KThread();
         thread2.setName("Thread 2");
 
-
+        // set the first thread to listen for the speaker on run
         thread1.setTarget(new Runnable(){
             public void run() {
                 System.out.println("Speaker Wait Test: " + thread1.getName() + " listening to " + thread2.getName() + " and heard " + speaker.listen());
             }
-     
         });
 
+        // set the second thread to speak 1000 on run
         thread2.setTarget(new Runnable() {
             public void run() {
                 speaker.speak(1000);
             }
         });
 
+        // fork and join the threads to start them
         thread1.fork();
         thread2.fork();
         thread2.join();
         System.out.println("Listener Wait Test: Completed successfully");
     }
 
+    /**
+     * Test multiple speakers are able to wait for multiple listeners 
+     */
     public static void multipleSpeakersWaitTest() {
         System.out.println("Multiple Speakers Wait Test: Started");
+        // create a communicator object to pass the messages
         Communicator speaker = new Communicator();
 
+        // create 4 threads for speaking and 4 threads for listening 
         KThread thread1 = new KThread();
         thread1.setName("Thread 1");
         KThread thread2 = new KThread();
@@ -170,6 +188,7 @@ public class Communicator {
         thread8.setName("Thread 8");
 
 
+        // set the first 4 threads the speak binary numbers 1 - 4
         thread1.setTarget(new Runnable(){
             public void run() {
                 speaker.speak(1);
@@ -194,6 +213,7 @@ public class Communicator {
             }
         });
 
+        // set the last 4 threads to listen to the message from the respective speaker threads
         thread5.setTarget(new Runnable(){
             public void run() {
                 System.out.println("Multiple Speakers Wait Test: " + thread5.getName() + " listening to " + thread1.getName() + " and heard " + speaker.listen());
@@ -215,6 +235,7 @@ public class Communicator {
             }
         });
 
+        // start all 8 threads and join the first 4 to watch progress
         thread1.fork();
         thread2.fork();
         thread3.fork();
@@ -232,10 +253,15 @@ public class Communicator {
         System.out.println("Multiple Speakers Wait Test: Started");
     }
 
+    /**
+     * Test if multiple listeners will wait for multiple speakers 
+     */
     public static void multipleListenersWaitTest() {
         System.out.println("Multiple Listeners Wait Test: Started");
+        // create a communicator object named speaker
         Communicator speaker = new Communicator();
 
+        // create 4 threads for speaking and 4 threads for listening 
         KThread thread1 = new KThread();
         thread1.setName("Thread 1");
         KThread thread2 = new KThread();
@@ -253,6 +279,7 @@ public class Communicator {
         KThread thread8 = new KThread();
         thread8.setName("Thread 8");
 
+        // set the first 4 threads to listen to the speaker object
         thread1.setTarget(new Runnable(){
             public void run() {
                 System.out.println("Multiple Listeners Wait Test: " + thread1.getName() + " listening to " + thread5.getName() + " and heard " + speaker.listen());
@@ -274,6 +301,7 @@ public class Communicator {
             }
         });
 
+        // set the last 4 threads to speak the binary numbers 1 - 4
         thread5.setTarget(new Runnable(){
             public void run() {
                 speaker.speak(1);
@@ -298,6 +326,7 @@ public class Communicator {
             }
         });
 
+        // start all 8 threads 
         thread1.fork();
         thread2.fork();
         thread3.fork();
@@ -307,6 +336,7 @@ public class Communicator {
         thread7.fork();
         thread8.fork();
 
+        // join the first 4 threads
         thread1.join();
         thread2.join();
         thread3.join();
@@ -315,9 +345,6 @@ public class Communicator {
         System.out.println("Multiple Listeners Wait Test: Started");
 
     }
-
-
-
 
     private boolean handShake;
     private int waitToListenQueue;
