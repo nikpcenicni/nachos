@@ -253,7 +253,7 @@ public class ReactWater{
 		hydrogen2.fork();
 		hydrogen3.fork();
 		oxygen0.fork();
-		oxygen0.join();
+		hydrogen0.join();
 	} // end of test3()
 	
 	
