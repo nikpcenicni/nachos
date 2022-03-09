@@ -145,7 +145,7 @@ public class ReactWater{
 		hydrogen1.fork();
 		oxygen0.fork();
 		oxygen0.join();
-		System.out.println("React Water Test 1: Completed");
+		System.out.println("React Water Test 1: Completed successfully");
 	} // end of test1()
 	
 	/**
@@ -157,11 +157,17 @@ public class ReactWater{
 		/* Variable Initialization */
 		ReactWater reactWaterTest = new ReactWater(); // ReactWater object for testing
 		KThread hydrogen0         = new KThread();    // 2 Hydrogen kthreads for testing
+		hydrogen0.setName("Hydrogen 0");
 		KThread hydrogen1         = new KThread();
+		hydrogen0.setName("Hydrogen 1");
 		KThread oxygen0           = new KThread();    // 4 Oxygen kthreads for testing
+		oxygen0.setName("Hydrogen 0");
 		KThread oxygen1           = new KThread();
+		oxygen1.setName("Hydrogen 1");
 		KThread oxygen2           = new KThread();
+		oxygen2.setName("Hydrogen 2");
 		KThread oxygen3           = new KThread();
+		oxygen3.setName("Hydrogen 3");
 		
 		/* Test case 2: One Water Molecule: 2 H and 4 O */
 		hydrogen0.setTarget(new Runnable() {
@@ -214,7 +220,7 @@ public class ReactWater{
 		oxygen3.fork();
 		oxygen0.join();
 
-		System.out.println("React Water Test 2: Completed");
+		System.out.println("React Water Test 2: Completed successfully");
 	} // end of test2()
 	
 	
@@ -235,40 +241,40 @@ public class ReactWater{
 		KThread hydrogen3         = new KThread();
 		hydrogen3.setName("Hydrogen 3");
 		KThread oxygen0           = new KThread();    // 1 Oxygen kthreads for testing
-		oxygen0.setName("Hydrogen 0");
+		oxygen0.setName("Oxygen 0");
 		
 		/* Test case 3: One Water Molecule: 4 H and 1 O */
 		hydrogen0.setTarget(new Runnable() {
 			public void run() {
-				System.out.println("React Water Test 1: " + hydrogen0.getName() + " made hydrogen");
+				System.out.println("React Water Test 3: " + hydrogen0.getName() + " made hydrogen");
 				reactWaterTest.hReady();
 			}
 		});
 		
 		hydrogen1.setTarget(new Runnable() {
 			public void run() {
-				System.out.println("React Water Test 1: " + hydrogen0.getName() + " made hydrogen");
+				System.out.println("React Water Test 3: " + hydrogen1.getName() + " made hydrogen");
 				reactWaterTest.hReady();
 			}
 		});
 		
 		hydrogen2.setTarget(new Runnable() {
 			public void run() {
-				System.out.println("React Water Test 1: " + hydrogen0.getName() + " made hydrogen");
+				System.out.println("React Water Test 3: " + hydrogen2.getName() + " made hydrogen");
 				reactWaterTest.hReady();
 			}
 		});
 		
 		hydrogen3.setTarget(new Runnable() {
 			public void run() {
-				System.out.println("React Water Test 1: " + hydrogen0.getName() + " made hydrogen");
+				System.out.println("React Water Test 3: " + hydrogen3.getName() + " made hydrogen");
 				reactWaterTest.hReady();
 			}
 		});
 		
 		oxygen0.setTarget(new Runnable() {
 			public void run() {
-				System.out.println("React Water Test 1: " + hydrogen0.getName() + " made hydrogen");
+				System.out.println("React Water Test 3: " + oxygen0.getName() + " made oxygen");
 				reactWaterTest.oReady();
 			}
 		});
@@ -279,7 +285,7 @@ public class ReactWater{
 		hydrogen3.fork();
 		oxygen0.fork();
 		oxygen0.join();
-		System.out.println("React Water Test 3: Complete");
+		System.out.println("React Water Test 3: Completed successfully");
 	} // end of test3()
 	
 	
@@ -317,72 +323,77 @@ public class ReactWater{
 		/* Test case 4: Three Water Molecules: 7 H and 4 O */
 		hydrogen0.setTarget(new Runnable() {
 			public void run() {
-				System.out.println("React Water Test 1: " + hydrogen0.getName() + " made hydrogen");
+				System.out.println("React Water Test 4: " + hydrogen0.getName() + " made hydrogen");
 				reactWaterTest.hReady();
 			}
 		});
 		
 		hydrogen1.setTarget(new Runnable() {
 			public void run() {
-				System.out.println("React Water Test 1: " + hydrogen0.getName() + " made hydrogen");
+				System.out.println("React Water Test 4: " + hydrogen1.getName() + " made hydrogen");
 				reactWaterTest.hReady();
 			}
 		});
 		
 		hydrogen2.setTarget(new Runnable() {
 			public void run() {
-				System.out.println("React Water Test 1: " + hydrogen0.getName() + " made hydrogen");
+				System.out.println("React Water Test 4: " + hydrogen2.getName() + " made hydrogen");
 				reactWaterTest.hReady();
 			}
 		});
 		
 		hydrogen3.setTarget(new Runnable() {
 			public void run() {
-				System.out.println("React Water Test 1: " + hydrogen0.getName() + " made hydrogen");
+				System.out.println("React Water Test 4: " + hydrogen3.getName() + " made hydrogen");
 				reactWaterTest.hReady();
 			}
 		});
 		
 		hydrogen4.setTarget(new Runnable() {
 			public void run() {
-				System.out.println("React Water Test 1: " + hydrogen0.getName() + " made hydrogen");
+				System.out.println("React Water Test 4: " + hydrogen4.getName() + " made hydrogen");
 				reactWaterTest.hReady();
 			}
 		});
 		
 		hydrogen5.setTarget(new Runnable() {
 			public void run() {
-				System.out.println("React Water Test 1: " + hydrogen0.getName() + " made hydrogen");
+				System.out.println("React Water Test 4: " + hydrogen5.getName() + " made hydrogen");
 				reactWaterTest.hReady();
 			}
 		});
 		
 		hydrogen6.setTarget(new Runnable() {
 			public void run() {
+				System.out.println("React Water Test 4: " + hydrogen6.getName() + " made hydrogen");
 				reactWaterTest.hReady();
 			}
 		});
 		
 		oxygen0.setTarget(new Runnable() {
 			public void run() {
+				System.out.println("React Water Test 4: " + oxygen0.getName() + " made oxygen");
 				reactWaterTest.oReady();
 			}
 		});
 		
 		oxygen1.setTarget(new Runnable() {
 			public void run() {
+				System.out.println("React Water Test 4: " + oxygen1.getName() + " made oxygen");
 				reactWaterTest.oReady();
 			}
 		});
 		
 		oxygen2.setTarget(new Runnable() {
 			public void run() {
+				System.out.println("React Water Test 4: " + oxygen2.getName() + " made oxygen");
 				reactWaterTest.oReady();
 			}
 		});
 		
 		oxygen3.setTarget(new Runnable() {
 			public void run() {
+				System.out.println("React Water Test 4: " + oxygen3.getName() + " made oxygen");
 				reactWaterTest.oReady();
 			}
 		});
@@ -402,7 +413,7 @@ public class ReactWater{
 		oxygen1.join();
 		oxygen2.join();
 		
-		System.out.println("React Water Test 4: Complted successfully");
+		System.out.println("React Water Test 4: Completed successfully");
 	} // end of test4()
 
 } // end of class ReactWater
