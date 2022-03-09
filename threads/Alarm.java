@@ -174,8 +174,7 @@ public class Alarm {
 				long time = Machine.timer().getTime();
 				tester.waitUntil(1);	
 				long waitTime = Machine.timer().getTime() - time;
-				System.out.println("Test 4: Complete. Wait Time: " + waitTime);
-				System.out.println();	
+				System.out.println("Test 4: Complete. Wait Time: " + waitTime);	
 			}
 		});
 		thread.fork();

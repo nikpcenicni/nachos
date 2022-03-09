@@ -80,14 +80,14 @@ public class Communicator {
      * Tests whether this module is working.
      */
     public static void selfTest() {
-        System.out.println("------------ Communicator Self Tests -------------");
+        System.out.println("------------ Communicator Self Tests -------------\n");
     
         speakerWaitTest();
         listenerWaitTest();
         multipleSpeakersWaitTest();
         multipleListenersWaitTest();
 
-        System.out.println("-------- All Communicator Tests Completed --------"); 
+        System.out.println("\n-------- All Communicator Tests Completed --------"); 
     }
     
     /**
@@ -250,7 +250,7 @@ public class Communicator {
         thread3.join();
         thread4.join();
 
-        System.out.println("Multiple Speakers Wait Test: Started");
+        System.out.println("Multiple Speakers Wait Test: Completed successfully");
     }
 
     /**
@@ -342,7 +342,7 @@ public class Communicator {
         thread3.join();
         thread4.join();
 
-        System.out.println("Multiple Listeners Wait Test: Started");
+        System.out.println("Multiple Listeners Wait Test: Completed successfully");
 
     }
 

@@ -80,12 +80,12 @@ public class Condition2 {
 	 * Invoked by the ThreadedKernel class to ensure correct implementation
 	 */
 	public static void selfTest(){  
-		System.out.println("------------ Condition2 Self Tests -------------");  
+		System.out.println("------------------- Condition2 Self Tests --------------------\n");  
 		Test1();
 		Test2();
 		new Test3();
 		//Test4();
-		System.out.println("------------ Condition2 Self Tests Completed -------------");
+		System.out.println("------------ All Condition2 Self Tests Completed -------------\n");
 	}
 	
 	/*
@@ -94,7 +94,7 @@ public class Condition2 {
 	 */
 	public static void Test1(){
 		
-		System.out.println("Commencing Condition2 Test 1: Starting Sleep & Wake \n");
+		System.out.println("Condition2 Test 1: Starting Sleep & Wake \n");
 		Lock lock = new Lock();
 	    Condition2 condition = new Condition2(lock); 
 
@@ -108,12 +108,12 @@ public class Condition2 {
 	    
 	    lock.acquire();
 
-	    System.out.println("Condition2 Test 1:\tTesting wake");	
+	    System.out.println("Condition2 Test 1: Testing wake");	
 	    condition.wake();
-	    System.out.println("Condition2 Test 1:\tWake successful");	
-	    System.out.println("Condition2 Test 1:\tTesting wakeall");		
+	    System.out.println("Condition2 Test 1: Wake successful");	
+	    System.out.println("Condition2 Test 1: Testing wakeall");		
 	    condition.wakeAll();
-	    System.out.println("Condition2 Test 1:\tWakeall successful");	
+	    System.out.println("Condition2 Test 1: Wakeall successful");	
 	    lock.release();
 
 	    System.out.print("\nCondition2 Test 1: Releasing Locks. \n\n");	
@@ -151,7 +151,7 @@ public class Condition2 {
 	 */
 	public static void Test2(){
 		
-		System.out.print("\nCondition2 Test 2: Context Switching \n\n");
+		System.out.println("Condition2 Test 2: Starting context switching");
 		Lock lock = new Lock();
 	    Condition2 cond = new Condition2(lock); 
 	    
@@ -180,7 +180,7 @@ public class Condition2 {
                 lock.acquire();
                 for (int i = 0; i < 50; i++) {
                     intList.add(i);
-                    System.out.println("Commencing Condition2 Test 2:Thread: " + i + " was Added");
+                    System.out.println("Condition2 Test 2: Thread: " + i + " was Added");
                     KThread.yield();
                 }
                 cond.wake();
@@ -197,10 +197,10 @@ public class Condition2 {
         //Wait until all processes finish execution
         
         consumer.join();
-        System.out.print("\nCondition2 Test 2: Terminating ondition2 Test 2 \n\n");	
+        System.out.println("Condition2 Test 2: Terminating Condition2 Test 2");	
         producer.join();
         
-        System.out.print("\nCondition2 Test 2: Completed successfully\n");
+        System.out.println("Condition2 Test 2: Completed successfully\n");
     }
 	
 	/*
@@ -208,6 +208,7 @@ public class Condition2 {
 	 * will run alternatively (i.e. after one another) via condition implementation
 	 */
 	private static class Test3{
+
 		
 		private static Lock lock;
 		private static Condition2 cond;
@@ -228,7 +229,7 @@ public class Condition2 {
 		}
 		
 		public Test3(){
-			System.out.print("\nCommencing Condition2 Test 3: InterLocked Processes \n\n");
+			System.out.println("Condition2 Test 3: Starting interlocked Processes\n");
 			lock = new Lock();
 			cond = new Condition2(lock);
 
@@ -244,7 +245,7 @@ public class Condition2 {
 			 * via join and vice versa. Otherwise, an indefinite block may occur.
 			 */
 			for (int i = 0; i < 50; i++) { KThread.currentThread().yield(); }
-			System.out.print("\nCondition2 Test 3: Successful \n\n");
+			System.out.println("\nCondition2 Test 3: Completed Successfully \n");
 		}
 	}
 	

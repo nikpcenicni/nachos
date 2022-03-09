@@ -438,14 +438,14 @@ public class KThread {
         new PingTest(0).run();
 
         // custom test code
-        System.out.println("------------ KThread Self Tests -------------");
+        System.out.println("------------ KThread Self Tests -------------\n");
       
         selfJoinTest();
         joinFinishedThreadTest();
         nestedJoinTest();
         multipleThreadJoins();
 
-        System.out.println("-------- All KThread Tests Completed --------");
+        System.out.println("\n-------- All KThread Tests Completed --------\n");
 
     }
 
