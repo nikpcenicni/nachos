@@ -346,18 +346,112 @@ public class UserProcess {
 	return 0;
     }
 
+    private int handleCreate(int file){
+        String fileName = null;
+        fileName = readVirtualMemoryString(file, 256);
+        if (fileName == null) {
+            Lib.debug(dbgProcess, "HandleCreate: Could not get filename from memory");
+            return -1;
+        }
+
+        OpenFile thisFile = ThreadedKernel.fileSystem.open(fileName, true);
+        if (thisFile == null) {
+            Lib.debug(dbgProcess, "HandleCreate: Unable to open file in filesystem");
+            return -1;
+        } else {
+            int i;
+            for (i = 2; i < this.fd.length; i++){
+                if (this.fd[i] == null) {
+                    this.fd[i] = thisFile;
+                    return i;
+                }
+            }
+            if (i == this.fd.length) {
+                Lib.debug(dbgProcess, "HandleCreate: No space in file descriptor");
+                return -1;
+            }
+        }
+        return -1;
+    }
+    private int handleOpen(int file) {
+        String filename = null;
+        filename = readVirtualMemoryString(file, 256);
+        if (filename == null) {
+            Lib.debug(dbgProcess, "HandleOpen: Could not read filename from memory");
+            return -1;
+        }
+        OpenFile thisFile = ThreadedKernel.fileSystem.open(filename, false);
+        if (thisFile == null) {
+            Lib.debug(dbgProcess, "HandleOpen: Could not open file from filesystem");
+            return -1;
+        } else {
+            int i;
+            for (i = 2; i < this.fd.length; i++){
+                if (this.fd[i] == null){
+                    this.fd[i] = thisFile;
+                    return i;
+                }
+            }
+            if (i == this.fd.length) {
+                Lib.debug(dbgProcess, "HandleOpen: No more space in file descriptor");
+                return -1;
+            }
+        }
+        return -1;
+    }
+
+    private int handleClose(int file){
+        if (file < 0 || file > 15) {
+            Lib.debug(dbgProcess, "HandleClose: Trying to close the file " + file + " which is outside of range");
+            return -1;
+        }
+        OpenFile thisFile = this.fd[file];
+        if (thisFile == null) {
+            Lib.debug(dbgProcess, "HandleClose: Trying to close a file that does not exist");
+            return -1;
+        } else {
+            thisFile.close();
+            this.fd[file] = null;
+            return 0;
+        }
+    }
+
+    private int handleWrite(int file, int buffer, int size) {
+
+    }
+
+    private int handleRead(int file, int buffer, int size) {
+
+    }
+
+    private int handleUnlink(int file) {
+        String filename = readVirtualMemoryString(file, 256);
+        if (filename == null) {
+            Lib.debug(dbgProcess, "HandleUnlink: Could not read file name from virtual memory");
+            return -1;
+        }
+        int indx = isInTable(filename);
+        if (indx != -1) {
+            handleClose(indx);
+        }
+        if (ThreadedKernel.fileSystem.remove(filename)){
+            return 0;
+        }
+        return -1;
+    }
+
 
     private static final int
         syscallHalt = 0,
-	syscallExit = 1,
-	syscallExec = 2,
-	syscallJoin = 3,
-	syscallCreate = 4,
-	syscallOpen = 5,
-	syscallRead = 6,
-	syscallWrite = 7,
-	syscallClose = 8,
-	syscallUnlink = 9;
+        syscallExit = 1,
+        syscallExec = 2,
+        syscallJoin = 3,
+        syscallCreate = 4,
+        syscallOpen = 5,
+        syscallRead = 6,
+        syscallWrite = 7,
+        syscallClose = 8,
+        syscallUnlink = 9;
 
     /**
      * Handle a syscall exception. Called by <tt>handleException()</tt>. The
@@ -389,8 +483,20 @@ public class UserProcess {
      */
     public int handleSyscall(int syscall, int a0, int a1, int a2, int a3) {
 	switch (syscall) {
-	case syscallHalt:
-	    return handleHalt();
+	    case syscallHalt:
+	        return handleHalt();
+        case syscallCreate:
+            return handleCreate(a0);
+        case syscallOpen:
+            return handleOpen(a0);
+        case syscallClose:
+            return handleClose(a0);
+        case syscallWrite:
+            return handleWrite(a0, a1, a2);
+        case syscallRead:
+            return handleRead(a0, a1, a2);
+        case syscallUnlink:
+            return hadnleUnlink(a0);
 
 
 	default:
