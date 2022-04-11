@@ -5,6 +5,10 @@ import nachos.threads.*;
 import nachos.userprog.*;
 
 import java.io.EOFException;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.NoSuchElementException;
+
 
 /**
  * Encapsulates the state of a user process that is not contained in its
@@ -346,6 +350,132 @@ public class UserProcess {
 	return 0;
     }
 
+    private int handleExec(int file, int argc, int argv){
+    	String fileName = null;
+		fileName = readVirtualMemoryString(file, 256);
+		
+		if(fileName == null)
+		{
+			System.out.println("handleExec: Could not read filename from Virtual Memory");
+			return -1;
+		}
+		if (argc < 0) {
+			System.out.println("handleExec: argc < 0");
+			return -1;
+		}
+		
+		String extension = fileName.toLowerCase().substring(fileName.length() - 5);
+		if(!".coff".equals(extension)){
+			System.out.println("handleExec: File extension incorrect (must be .coff)");
+			return -1;
+		}
+		
+		String[] args = new String[argc];
+		
+		byte[] temp = new byte[4];
+
+		for (int i = 0; i < argc; i++) 
+		{
+			if(readVirtualMemory(argv+i*4, temp) != temp.length){
+				System.out.println("handleExec: Error reading arg ");
+				return -1;
+			}
+			args[i] = readVirtualMemoryString(Lib.bytesToInt(temp, 0),256);
+			
+			if (args[i] == null)
+			{
+				System.out.println("handleExec: Error reading arg ");
+				return -1;
+			}
+		}
+		
+		UserProcess child = newUserProcess();
+		
+		children.put(child.pID, child);
+		
+		child.parent = this;
+		
+		boolean insertProgram = child.execute(fileName, args);
+		
+		if(insertProgram) {
+			return child.pID;
+		}
+		
+		return -1;
+    }
+    
+	private int handleJoin(int processID, int status) {
+	
+		if(status < 0 || processID < 0)
+			return -1;
+		
+		UserProcess child;
+		
+		if(children.containsKey(processID))
+			child = children.get(processID);
+		else {
+			System.out.println("handleJoin: Error processID not found or has already joined with a parent");
+			return -1;
+		}
+		
+		child.statusLock.acquire();
+		
+		Integer childStatus = child.exitStatus;
+
+		if (childStatus == null)
+		{
+			statusLock.acquire();
+			child.statusLock.release();
+			joinCond.sleep();
+			statusLock.release();
+			
+			child.statusLock.acquire();
+			childStatus = child.exitStatus;
+
+		}
+		
+		child.statusLock.release();
+		children.remove(processID);
+			
+		byte[] statuses = Lib.bytesFromInt(childStatus.intValue());
+		writeVirtualMemory(status, statuses);
+		
+		if (childStatus.intValue() == 0)
+			return 1;
+		else		
+			return 0;
+		
+	}
+    
+    private int handleExit(int status){
+    	unloadSections();
+    	for(int i = 2; i < fileDescriptor.length; i++){
+    		if(fileDescriptor[i] != null)
+    			fileDescriptor[i].close();
+    	}
+    	statusLock.acquire();
+    	exitStatus = status;
+    	statusLock.release();
+    	
+    	parentMutex.P();
+    	if(parent != null){
+    		parent.statusLock.acquire();
+    		parent.joinCond.wakeAll();
+    		parent.statusLock.release();
+    	}
+    	parentMutex.V();
+    	
+    	for(UserProcess aChild : children.values()){
+    		aChild.parentMutex.P();
+    		aChild.parent = null;
+    		aChild.parentMutex.V();
+    	}
+    	
+    	decProcessCount();
+    	UThread.finish();
+    	return status;
+    }
+    
     private int handleCreate(int file){
         String fileName = null;
         fileName = readVirtualMemoryString(file, 256);
@@ -441,6 +571,7 @@ public class UserProcess {
     }
 
 
+
     private static final int
         syscallHalt = 0,
         syscallExit = 1,
@@ -487,6 +618,12 @@ public class UserProcess {
 	        return handleHalt();
         case syscallCreate:
             return handleCreate(a0);
+        case syscallExec:
+        	return handleExec(a0, a1, a2);
+        case syscallJoin:
+        	return handleJoin(a0, a1);
+        case syscallExit:
+        	return handleExit(a0);
         case syscallOpen:
             return handleOpen(a0);
         case syscallClose:
@@ -496,7 +633,7 @@ public class UserProcess {
         case syscallRead:
             return handleRead(a0, a1, a2);
         case syscallUnlink:
-            return hadnleUnlink(a0);
+            return handleUnlink(a0);
 
 
 	default:
@@ -535,6 +672,17 @@ public class UserProcess {
 	    Lib.assertNotReached("Unexpected exception");
 	}
     }
+    
+    public void decProcessCount(){
+    	UserKernel.pCountMutex.P();
+    	
+    	if(--UserKernel.processCount == 0)
+    		Kernel.kernel.terminate();
+    	
+    	UserKernel.pCountMutex.V();
+    }
+    
+    protected OpenFile[] fileDescriptor;
 
     /** The program being run by this process. */
     protected Coff coff;
@@ -552,4 +700,15 @@ public class UserProcess {
 	
     private static final int pageSize = Processor.pageSize;
     private static final char dbgProcess = 'a';
+    
+    protected int pID;
+    
+    protected Hashtable<Integer, UserProcess> children = new Hashtable<Integer, UserProcess>();
+    
+    protected UserProcess parent;
+    protected Semaphore parentMutex = new Semaphore(1);
+    
+    protected Integer exitStatus;
+    protected Lock statusLock;
+    protected Condition joinCond;
 }

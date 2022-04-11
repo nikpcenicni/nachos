@@ -23,6 +23,8 @@ public class UserKernel extends ThreadedKernel {
 	super.initialize(args);
 
 	console = new SynchConsole(Machine.console());
+	processCount = 0;
+	pCountMutex = new Semaphore(1);
 	
 	Machine.processor().setExceptionHandler(new Runnable() {
 		public void run() { exceptionHandler(); }
@@ -109,6 +111,9 @@ public class UserKernel extends ThreadedKernel {
 
     /** Globally accessible reference to the synchronized console. */
     public static SynchConsole console;
+    
+    public static int processCount;
+    public static Semaphore pCountMutex;
 
     // dummy variables to make javac smarter
     private static Coff dummy1 = null;
