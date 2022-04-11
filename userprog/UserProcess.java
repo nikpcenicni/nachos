@@ -140,7 +140,7 @@ public class UserProcess {
 		byte[] memory = Machine.processor().getMemory();
 		
 		// Initilize variables for return
-		int amount = accessMemory(vaddr, data, offset, length1, true);
+		int amtBytes = accessMemory(vaddr, data, offset, length1, true);
 		int length1 = Math.min(length, pageSize - vaddr % pageSize);
 		int numOfPages = ((length + vaddr % pageSize) / pageSize) + 1;
 		
@@ -148,7 +148,7 @@ public class UserProcess {
 		if(numOfPages > 1){
 			// Loop through and add to amount
 			for(int i = 1; i < numOfPages; i++){
-				amount += accessMemory((vaddr/pageSize + i * pageSize), data, offset + amount, Math.min(length - amount, pageSize), true);
+				amtBytes += accessMemory((vaddr/pageSize + i * pageSize), data, offset + amtBytes, Math.min(length - amtBytes, pageSize), true);
 			}
 		}
 		
@@ -156,7 +156,7 @@ public class UserProcess {
 		lock.release();
 		
 		// Return amount of bytes
-		return amount;
+		return amtBytes;
     }
 
     /**
@@ -195,7 +195,7 @@ public class UserProcess {
 		byte[] memory = Machine.processor().getMemory();
 		
 		// Initialize variables for return
-		int amount = accessMemory(vaddr, data, offset, length1, false);
+		int amtBytes = accessMemory(vaddr, data, offset, length1, false);
 		int length1 = Math.min(length, pageSize - vaddr % pageSize);
 		int numOfPages = ((length + vaddr % pageSize) / pageSize) + 1;
 		
@@ -203,7 +203,7 @@ public class UserProcess {
 		if(numOfPages > 1){
 			// Loop through and add to amount
 			for(int i = 1; i < numOfPages; i++){
-				amount += accessMemory((vaddr / pageSize + i * pageSize), data, offset+amount, Math.min(length - amount, pageSize), false);
+				amtBytes += accessMemory((vaddr / pageSize + i * pageSize), data, offset+amtBytes, Math.min(length - amtBytes, pageSize), false);
 			}
 		}
 		
@@ -211,7 +211,7 @@ public class UserProcess {
 		lock.release();
 		
 		// Return amount of bytes
-		return amount;
+		return amtBytes;
     }
 
     /**
@@ -310,13 +310,35 @@ public class UserProcess {
      * @return	<tt>true</tt> if the sections were successfully loaded.
      */
     protected boolean loadSections() {
+    	
+    	// Check to see if there's enough memory to start a new process
 		if (numPages > Machine.processor().getNumPhysPages()) {
-		    coff.close();
-		    Lib.debug(dbgProcess, "\tinsufficient physical memory");
+			// Close the Coff
+			coff.close();
+			
+			// Print not enough memory to console
+		    System.out.println("Not Enough Memory!")
+		    
+		    // Return false
 		    return false;
 		}
-	
-		// load sections
+		
+		// Store page table in variable
+		tableOfPages = ((UserKernel)Kernel.kernel).getPages(numPages);
+		
+		if (tableOfPages == 0) {
+			// Close the coff
+			coff.close();
+			
+			// Return false
+			return false;
+		}
+		
+		for (int i = 0; i < tableOfPages.length; i++) {
+			tableOfPages[i].vpn = i;
+		}
+		
+		// Load sections
 		for (int s = 0; s < coff.getNumSections(); s++) {
 		    CoffSection section = coff.getSection(s);
 		    
@@ -331,6 +353,7 @@ public class UserProcess {
 		    }
 		}
 		
+		// Return true
 		return true;
     }
 
