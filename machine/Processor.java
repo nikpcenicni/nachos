@@ -225,7 +225,7 @@ public final class Processor {
      * @return	the number of pages of physical memory.
      */
     public int getNumPhysPages() {
-	return numPhysPages;
+    	return numPhysPages;
     }
 
     /**

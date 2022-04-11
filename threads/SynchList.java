@@ -39,15 +39,15 @@ public class SynchList {
      * @return	the element removed from the front of the queue.
      */
     public Object removeFirst() {
-	Object o;
-
-	lock.acquire();
-	while (list.isEmpty())
-	    listEmpty.sleep();
-	o = list.removeFirst();
-	lock.release();
-
-	return o;
+		Object o;
+	
+		lock.acquire();
+		while (list.isEmpty())
+		    listEmpty.sleep();
+		o = list.removeFirst();
+		lock.release();
+	
+		return o;
     }
 
     private static class PingTest implements Runnable {
