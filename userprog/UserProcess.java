@@ -324,9 +324,9 @@ public class UserProcess {
 		}
 		
 		// Store page table in variable
-		tableOfPages = ((UserKernel)Kernel.kernel).getPages(numPages);
+		pageTable = ((UserKernel)Kernel.kernel).getPages(numPages);
 		
-		if (tableOfPages == 0) {
+		if (pageTable == 0) {
 			// Close the coff
 			coff.close();
 			
@@ -334,8 +334,8 @@ public class UserProcess {
 			return false;
 		}
 		
-		for (int i = 0; i < tableOfPages.length; i++) {
-			tableOfPages[i].vpn = i;
+		for (int i = 0; i < pageTable.length; i++) {
+			pageTable[i].vpn = i;
 		}
 		
 		// Load sections
@@ -361,6 +361,8 @@ public class UserProcess {
      * Release any resources allocated by <tt>loadSections()</tt>.
      */
     protected void unloadSections() {
+    	// Release the page table
+    	((UserKernel)Kernel.kernel).releasePageTable(pageTable);
     }    
 
     /**
