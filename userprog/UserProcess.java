@@ -134,33 +134,28 @@ public class UserProcess {
     public int readVirtualMemory(int vaddr, byte[] data, int offset, int length) {
     	Lib.assertTrue(offset >= 0 && length >= 0 && offset+length <= data.length);
     	
+    	// Acquire lock
     	lock.acquire();
     	
 		byte[] memory = Machine.processor().getMemory();
 		
-		// for now, just assume that virtual addresses equal physical addresses
-		//if (vaddr < 0 || vaddr >= memory.length)
-		//    return 0;
-		
-		//int amount = Math.min(length, memory.length-vaddr);
-		//System.arraycopy(memory, vaddr, data, offset, amount);
-		
-		
-		
-		
-		////////////////////////////////////////////////////
-		int pages = ((length + vaddr % pageSize) / pageSize) + 1;
-		int length1 = Math.min(length, pageSize - vaddr % pageSize);
-
+		// Initilize variables for return
 		int amount = accessMemory(vaddr, data, offset, length1, true);
-		if(pages > 1){
-			for(int i = 1; i < pages; ++i){
+		int length1 = Math.min(length, pageSize - vaddr % pageSize);
+		int numOfPages = ((length + vaddr % pageSize) / pageSize) + 1;
+		
+		// Check if number of pages is greater than 1
+		if(numOfPages > 1){
+			// Loop through and add to amount
+			for(int i = 1; i < numOfPages; i++){
 				amount += accessMemory((vaddr/pageSize + i * pageSize), data, offset + amount, Math.min(length - amount, pageSize), true);
 			}
 		}
 		
+		// Release lock
 		lock.release();
 		
+		// Return amount of bytes
 		return amount;
     }
 
@@ -193,16 +188,29 @@ public class UserProcess {
      */
     public int writeVirtualMemory(int vaddr, byte[] data, int offset, int length) {
 		Lib.assertTrue(offset >= 0 && length >= 0 && offset+length <= data.length);
+		
+		// Acquire lock
+		lock.aquire();
 	
 		byte[] memory = Machine.processor().getMemory();
 		
-		// for now, just assume that virtual addresses equal physical addresses
-		if (vaddr < 0 || vaddr >= memory.length)
-		    return 0;
-	
-		int amount = Math.min(length, memory.length-vaddr);
-		System.arraycopy(data, offset, memory, vaddr, amount);
-	
+		// Initialize variables for return
+		int amount = accessMemory(vaddr, data, offset, length1, false);
+		int length1 = Math.min(length, pageSize - vaddr % pageSize);
+		int numOfPages = ((length + vaddr % pageSize) / pageSize) + 1;
+		
+		// Check if number of pages is greater than 1
+		if(numOfPages > 1){
+			// Loop through and add to amount
+			for(int i = 1; i < numOfPages; i++){
+				amount += accessMemory((vaddr / pageSize + i * pageSize), data, offset+amount, Math.min(length - amount, pageSize), false);
+			}
+		}
+		
+		// Release Lock
+		lock.release();
+		
+		// Return amount of bytes
 		return amount;
     }
 
