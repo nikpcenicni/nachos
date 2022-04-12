@@ -1,7 +1,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#define MAXOPENFILES   13             
+#define MAXOPENFILES   13         
 #define TESTFILE       "test1.in"
 #define TESTFILE2      "test2.in"
 #define TESTFILE3      "test3.in"
