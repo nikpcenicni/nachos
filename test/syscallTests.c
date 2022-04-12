@@ -2,8 +2,6 @@
 #include "stdlib.h"
 
 
-
-#define NULL           0
 #define NUMTESTS       2        
 #define TESTFILE       "testVar1.txt"
 #define TESTFILE2      "testVar2.txt"
