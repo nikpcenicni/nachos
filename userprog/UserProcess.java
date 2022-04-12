@@ -595,14 +595,62 @@ public class UserProcess {
             return 0;
         }
     }
+    
+    private int handleRead(int file, int bufferAddr, int count) {
+    	Lib.debug(dbgProcess, "Function handleRead() Executing..."); 
+    	Lib.debug(dbgProcess, "File Handle: " + file);                      
+	    Lib.debug(dbgProcess, "Buffer Address: " + bufferAddr);                   
+	    Lib.debug(dbgProcess, "Buffer Size: " + count);
+    	
+	    if((file >= 16 || file < 0) || count < 0 ||
+				|| fd[file].file == null) {
+			return -1;
+		}
+	    
+        byte[] newBuffer = new byte[count];
+	    FileDescriptor f = fd[file];                                  
 
-    private int handleWrite(int file, int buffer, int size) {
+        int result = f.file.read(f.position, newBuffer, 0, count);  
+        
+        if (result <= 0) {                                           
+            return -1;                                                   
+        }                                                                
+        else {                                                             
+            int output = writeVirtualMemory(bufferAddr, newBuffer);
+            	if(file >= 2){
+            		f.position = f.position + output;
+            	}                                      
+            return result;                                                 
+        }                                                                  
+    }                                                                      
+        
 
-    }
-
-    private int handleRead(int file, int buffer, int size) {
-
-    }
+    private int handleWrite(int file, int bufferAddr, int count) {
+    	Lib.debug(dbgProcess, "Function handleWrite() Executing..."); 
+    	Lib.debug(dbgProcess, "File Handle: " + file);                      
+	    Lib.debug(dbgProcess, "Buffer Address: " + bufferAddr);                   
+	    Lib.debug(dbgProcess, "Buffer Size: " + count);
+	    
+	    if((file >= 16 || file < 0) || count < 0 ||
+				|| fd[file].file == null) {
+			return -1;
+		}
+	    
+	    byte[] newBuffer = new byte[count];
+	    FileDescriptor f = fd[file];    
+	    
+	    int numOfBytes = readVirtualMemory(bufferAddr, newBuffer);
+	    int result = f.file.read(f.position, newBuffer, 0, count);
+	    
+	    if (result <= 0) {                                           
+            return -1;                                                   
+        }                                                                
+        else {                                                             
+            f.position = f.position + output;                               
+            return result;                                                 
+        }                                                                  
+    }      
+	   
 
     private int handleUnlink(int file) {
         String filename = readVirtualMemoryString(file, 256);
