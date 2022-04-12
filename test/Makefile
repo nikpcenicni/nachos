@@ -57,3 +57,8 @@ start.o: start.s syscall.h
 
 %.coff: %.o $(NLIB)
 	$(LD) $(LDFLAGS) -o $@ $< start.o -lnachos
+
+test.coff: ./syscallTests.c ./openfiletest.c
+	$(CC) $(CFLAGS) -c $?
+	$(LD) $(LDFLAGS) -o openfiletest.coff openfiletest.o start.o -lnachos
+	$(LD) $(LDFLAGS) -o syscallTests.coff syscallTests.o start.o -lnachos
