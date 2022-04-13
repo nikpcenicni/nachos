@@ -31,6 +31,14 @@ public class UserProcess {
 		pageTable = new TranslationEntry[numPhysPages];
 		for (int i=0; i<numPhysPages; i++)
 		    pageTable[i] = new TranslationEntry(i,i, true,false,false,false);
+        this.pid = UserKernel.pid;
+        ++UserKernel.pid;
+        this.fd = new OpenFile[16];
+        this.fd[0] = UserKernel.console.openForReading();
+        this.fd[1] = UserKernel.console.openForWriting();
+        this.statusLock = new Lock();
+        this.joinCond = new Condition(this.statusLock);
+        this.exitStatus = null;
     }
     
     /**
@@ -317,7 +325,7 @@ public class UserProcess {
 			coff.close();
 			
 			// Print not enough memory to console
-		    System.out.println("Not Enough Memory!")
+		    System.out.println("Not Enough Memory!");
 		    
 		    // Return false
 		    return false;
@@ -387,6 +395,15 @@ public class UserProcess {
 		processor.writeRegister(Processor.regA0, argc);
 		processor.writeRegister(Processor.regA1, argv);
     }
+
+    private int isInTable(String filename) {
+        for (int i = 0; i < this.fd.length; i++) {
+          OpenFile currFile = this.fd[i];
+          if (currFile != null && filename == currFile.getName())
+            return i;
+        }
+        return -1;
+      }
 
     /**
      * Handle the halt() system call. 
@@ -498,9 +515,9 @@ public class UserProcess {
     
     private int handleExit(int status){
     	unloadSections();
-    	for(int i = 2; i < fileDescriptor.length; i++){
-    		if(fileDescriptor[i] != null)
-    			fileDescriptor[i].close();
+    	for(int i = 2; i < fd.length; i++){
+    		if(fd[i] != null)
+    			fd[i].close();
     	}
     	statusLock.acquire();
     	exitStatus = status;
@@ -597,58 +614,151 @@ public class UserProcess {
     }
     
     private int handleRead(int file, int bufferAddr, int count) {
-    	Lib.debug(dbgProcess, "Function handleRead() Executing..."); 
-    	Lib.debug(dbgProcess, "File Handle: " + file);                      
-	    Lib.debug(dbgProcess, "Buffer Address: " + bufferAddr);                   
-	    Lib.debug(dbgProcess, "Buffer Size: " + count);
+    	// Lib.debug(dbgProcess, "Function handleRead() Executing..."); 
+    	// Lib.debug(dbgProcess, "File Handle: " + file);                      
+	    // Lib.debug(dbgProcess, "Buffer Address: " + bufferAddr);                   
+	    // Lib.debug(dbgProcess, "Buffer Size: " + count);
     	
-	    if((file >= 16 || file < 0) || count < 0 ||
-				|| fd[file].file == null) {
-			return -1;
-		}
+	    // if((file >= 16 || file < 0) || count < 0 ||
+		// 		fd[file].file == null) {
+		// 	return -1;
+		// }
 	    
-        byte[] newBuffer = new byte[count];
-	    FileDescriptor f = fd[file];                                  
+        // byte[] newBuffer = new byte[count];
+	    // OpenFile f = fd[file];                                  
 
-        int result = f.file.read(f.position, newBuffer, 0, count);  
+        // int result = f.file.read(f.position, newBuffer, 0, count);  
         
-        if (result <= 0) {                                           
-            return -1;                                                   
-        }                                                                
-        else {                                                             
-            int output = writeVirtualMemory(bufferAddr, newBuffer);
-            	if(file >= 2){
-            		f.position = f.position + output;
-            	}                                      
-            return result;                                                 
-        }                                                                  
+        // if (result <= 0) {                                           
+        //     return -1;                                                   
+        // }                                                                
+        // else {                                                             
+        //     int output = writeVirtualMemory(bufferAddr, newBuffer);
+        //     	if(file >= 2){
+        //     		f.position = f.position + output;
+        //     	}                                      
+        //     return result;                                                 
+        //}    
+        
+        if (file < 0 || file == 1 || file > 15) {
+            Lib.debug(dbgProcess, "HandleRead: Trying to read from the file " + file + " which is outside of range");
+            return -1;
+        }
+        OpenFile f = this.fd[file];
+        if (f == null) {
+            Lib.debug(dbgProcess, "HandleRead: Trying to read from a file that does not exist");
+            return -1;
+        }
+        byte[] buffer = new byte[pageSize];
+        int leftToRead = count;
+        int totalRead = 0;
+        int read = 0;
+
+        while (leftToRead > pageSize){
+            read = f.read(bufferAddr, buffer, 0, pageSize);
+            if (read == -1) {
+                Lib.debug(dbgProcess, "HandleRead: Could not read from file");
+                return -1;
+            } else if (read == 0) {
+                return totalRead;
+            }
+            int readBytes = writeVirtualMemory(bufferAddr, buffer, 0, read);
+            if (read != readBytes) {
+                Lib.debug(dbgProcess, "HandleRead: Read and write didnt match");
+                return -1;
+            }
+            bufferAddr += readBytes;
+            totalRead += readBytes;
+            leftToRead -= readBytes;
+        }
+        read = f.read(buffer, 0, leftToRead);
+        if (read == -1) {
+            Lib.debug(dbgProcess, "HandleRead: Could not read from file");
+            return -1;
+        } 
+        int readBytes = writeVirtualMemory(bufferAddr, buffer, 0, read);
+        if (read != readBytes) {
+            Lib.debug(dbgProcess, "HandleRead: Read and write didnt match");
+            return -1;
+        }
+        totalRead += readBytes;
+        return totalRead;
     }                                                                      
         
 
     private int handleWrite(int file, int bufferAddr, int count) {
-    	Lib.debug(dbgProcess, "Function handleWrite() Executing..."); 
-    	Lib.debug(dbgProcess, "File Handle: " + file);                      
-	    Lib.debug(dbgProcess, "Buffer Address: " + bufferAddr);                   
-	    Lib.debug(dbgProcess, "Buffer Size: " + count);
+    	// Lib.debug(dbgProcess, "Function handleWrite() Executing..."); 
+    	// Lib.debug(dbgProcess, "File Handle: " + file);                      
+	    // Lib.debug(dbgProcess, "Buffer Address: " + bufferAddr);                   
+	    // Lib.debug(dbgProcess, "Buffer Size: " + count);
 	    
-	    if((file >= 16 || file < 0) || count < 0 ||
-				|| fd[file].file == null) {
-			return -1;
-		}
+	    // if((file >= 16 || file < 0) || count < 0 ||
+		// 	fd[file].file == null) {
+		// 	return -1;
+		// }
 	    
-	    byte[] newBuffer = new byte[count];
-	    FileDescriptor f = fd[file];    
+	    // byte[] newBuffer = new byte[count];
+	    // OpenFile f = fd[file];    
 	    
-	    int numOfBytes = readVirtualMemory(bufferAddr, newBuffer);
-	    int result = f.file.read(f.position, newBuffer, 0, count);
+	    // int numOfBytes = readVirtualMemory(bufferAddr, newBuffer);
+	    // int result = f.file.read(f.position, newBuffer, 0, count);
 	    
-	    if (result <= 0) {                                           
-            return -1;                                                   
-        }                                                                
-        else {                                                             
-            f.position = f.position + output;                               
-            return result;                                                 
-        }                                                                  
+	    // if (result <= 0) {                                           
+        //     return -1;                                                   
+        // }                                                                
+        // else {                                                             
+        //     f.position = f.position + output;                               
+        //     return result;                                                 
+        // }   
+        
+        if(file == 0){
+            Lib.debug(dbgProcess, "HandleWrite: Trying to write to stdin");
+            return -1;
+        }
+        if (file < 1 || file > 15){
+            Lib.debug(dbgProcess, "HandleWrite: Trying to write to file " + file + " which is outside of range");
+            return -1;
+        }
+        OpenFile f = this.fd[file];
+        if (f == null){
+            Lib.debug(dbgProcess, "HandleWrite: Trying to write to file " + file + " which does not exist");
+            return -1;
+        }
+
+        byte[] buffer = new byte[pageSize];
+        int leftToWrite = count;
+        int totalWrote = 0;
+        int written = 0;
+        while (leftToWrite > pageSize) {
+            written = readVirtualMemory(bufferAddr, buffer);
+            int write = f.write(buffer, 0, written);
+            if (written != write) {
+                Lib.debug(dbgProcess, "HandleWrite: Not all bytes were written");
+            }
+            if (write == -1){
+                Lib.debug(dbgProcess, "HandleWrite: Error writing to file");
+                return -1;
+            }
+            else if (write == 0){
+                return totalWrote;
+            }
+            bufferAddr += write;
+            totalWrote += write;
+            leftToWrite -= write;
+        }
+        written = readVirtualMemory(bufferAddr, buffer, 0, leftToWrite);
+        int write = f.write(buffer, 0, written);
+        if (written != write) {
+            Lib.debug(dbgProcess, "HandleWrite: Not all bytes were written");
+        }
+        if (write == -1){
+            Lib.debug(dbgProcess, "HandleWrite: Error writing to file");
+            return -1;
+        }
+        
+        totalWrote += write;
+        return totalWrote;
+        
     }      
 	   
 
@@ -711,36 +821,6 @@ public class UserProcess {
      * @return	the value to be returned to the user.
      */
     public int handleSyscall(int syscall, int a0, int a1, int a2, int a3) {
-<<<<<<< Updated upstream
-	switch (syscall) {
-	    case syscallHalt:
-	        return handleHalt();
-        case syscallCreate:
-            return handleCreate(a0);
-        case syscallExec:
-        	return handleExec(a0, a1, a2);
-        case syscallJoin:
-        	return handleJoin(a0, a1);
-        case syscallExit:
-        	return handleExit(a0);
-        case syscallOpen:
-            return handleOpen(a0);
-        case syscallClose:
-            return handleClose(a0);
-        case syscallWrite:
-            return handleWrite(a0, a1, a2);
-        case syscallRead:
-            return handleRead(a0, a1, a2);
-        case syscallUnlink:
-            return handleUnlink(a0);
-
-
-	default:
-	    Lib.debug(dbgProcess, "Unknown syscall " + syscall);
-	    Lib.assertNotReached("Unknown system call!");
-	}
-	return 0;
-=======
 		switch (syscall) {
 		    case syscallHalt:
 		        return handleHalt();
@@ -755,7 +835,7 @@ public class UserProcess {
 	        case syscallRead:
 	            return handleRead(a0, a1, a2);
 	        case syscallUnlink:
-	            return hadnleUnlink(a0);
+	            return handleUnlink(a0);
 	
 	
 		default:
@@ -763,7 +843,6 @@ public class UserProcess {
 		    Lib.assertNotReached("Unknown system call!");
 		}
 		return 0;
->>>>>>> Stashed changes
     }
 
     /**
@@ -805,7 +884,7 @@ public class UserProcess {
     	UserKernel.pCountMutex.V();
     }
     
-    protected OpenFile[] fileDescriptor;
+    protected OpenFile[] fd;
 
     /** The program being run by this process. */
     protected Coff coff;

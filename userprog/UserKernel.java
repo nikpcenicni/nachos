@@ -4,6 +4,8 @@ import nachos.machine.*;
 import nachos.threads.*;
 import nachos.userprog.*;
 
+import java.util.LinkedList; 
+
 /**
  * A kernel that can support multiple user processes.
  */
@@ -26,15 +28,7 @@ public class UserKernel extends ThreadedKernel {
      * processor's exception handler and page list
      */
     public void initialize(String[] args) {
-<<<<<<< Updated upstream
-	super.initialize(args);
-
-	console = new SynchConsole(Machine.console());
-	processCount = 0;
-	pCountMutex = new Semaphore(1);
-=======
 		super.initialize(args);
->>>>>>> Stashed changes
 	
 		console = new SynchConsole(Machine.console());
 		
@@ -159,8 +153,7 @@ public class UserKernel extends ThreadedKernel {
     	
     	lock.release();
     }
-    
-    
+  
     
     
     
