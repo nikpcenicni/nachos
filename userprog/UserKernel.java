@@ -154,7 +154,16 @@ public class UserKernel extends ThreadedKernel {
     	lock.release();
     }
   
-    
+    public void releasePageTable(TranslationEntry[] pageTable){
+    	pageLock.acquire();
+    	
+    	for(int i=0; i<pageTable.length; ++i){
+    		pageTable[i].valid = false;
+    		freePageList.add(pageTable[i]);
+    	}
+    	
+    	pageLock.release();
+    }
     
     
     
@@ -171,4 +180,7 @@ public class UserKernel extends ThreadedKernel {
 
     // dummy variables to make javac smarter
     private static Coff dummy1 = null;
+    
+    public LinkedList<TranslationEntry> freePageList;
+    public Lock pageLock;
 }

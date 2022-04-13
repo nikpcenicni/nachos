@@ -84,6 +84,41 @@ public class UserProcess {
     	Machine.processor().setPageTable(pageTable);
     }
 
+    public int accessMemory(int vaddr, byte[] data, int offset, int length, boolean isRead){
+        int vpn = vaddr / pageSize;
+        int vOffset = vaddr % pageSize;
+
+    	TranslationEntry entry = pageTable[vpn]; 
+    	entry.used = true;
+    	
+    	//Calculate the physical address and memory available
+    	int addr = entry.ppn * pageSize + vOffset;
+    	byte[] memory = Machine.processor().getMemory();
+    	
+    	//If the physical address is out of bounds return 0
+    	if(addr < 0 || addr > memory.length || !entry.valid)
+    		return 0;
+    		
+    	//Set the amount of bytes accessed
+    	int amount = Math.min(length, memory.length - addr);
+    	//If the method is reading
+    	if(isRead)
+    		//Copy from memory into data
+    		System.arraycopy(memory, addr, data, offset, amount);
+    	//If the method is writing
+    	else
+    		//And the page is not readOnly
+    		if(!entry.readOnly)
+    			//Copy into memory from data
+    			System.arraycopy(data, offset, memory, addr, amount);
+    		else
+    			//If if is read only return 0
+    			return 0;
+    			
+    	//Finally return the amount of bytes accessed
+    	return amount;
+    }
+
     /**
      * Read a null-terminated string from this process's virtual memory. Read
      * at most <tt>maxLength + 1</tt> bytes from the specified address, search
@@ -148,7 +183,7 @@ public class UserProcess {
 		byte[] memory = Machine.processor().getMemory();
 		
 		// Initilize variables for return
-		int amtBytes = accessMemory(vaddr, data, offset, length1, true);
+		int amtBytes = accessMemory(vaddr, data, offset, length, true);
 		int length1 = Math.min(length, pageSize - vaddr % pageSize);
 		int numOfPages = ((length + vaddr % pageSize) / pageSize) + 1;
 		
@@ -203,7 +238,7 @@ public class UserProcess {
 		byte[] memory = Machine.processor().getMemory();
 		
 		// Initialize variables for return
-		int amtBytes = accessMemory(vaddr, data, offset, length1, false);
+		int amtBytes = accessMemory(vaddr, data, offset, length, false);
 		int length1 = Math.min(length, pageSize - vaddr % pageSize);
 		int numOfPages = ((length + vaddr % pageSize) / pageSize) + 1;
 		
@@ -211,7 +246,8 @@ public class UserProcess {
 		if(numOfPages > 1){
 			// Loop through and add to amount
 			for(int i = 1; i < numOfPages; i++){
-				amtBytes += accessMemory((vaddr / pageSize + i * pageSize), data, offset+amtBytes, Math.min(length - amtBytes, pageSize), false);
+				amtBytes += accessMemory((vaddr / pageSize + i * pageSize), 
+                data, offset+amtBytes, Math.min(length - amtBytes, pageSize), false);
 			}
 		}
 		
@@ -242,7 +278,7 @@ public class UserProcess {
 		}
 	
 		try {
-		    coff = new Coff(executable);
+		    this.coff = new Coff(executable);
 		}
 		catch (EOFException e) {
 		    executable.close();
@@ -259,7 +295,7 @@ public class UserProcess {
 			Lib.debug(dbgProcess, "\tfragmented executable");
 			return false;
 		    }
-		    numPages += section.getLength();
+		    this.numPages += section.getLength();
 		}
 	
 		// make sure the argv array will fit in one page
@@ -457,14 +493,14 @@ public class UserProcess {
 		
 		UserProcess child = newUserProcess();
 		
-		children.put(child.pID, child);
+		children.put(child.pid, child);
 		
 		child.parent = this;
 		
 		boolean insertProgram = child.execute(fileName, args);
 		
 		if(insertProgram) {
-			return child.pID;
+			return child.pid;
 		}
 		
 		return -1;
@@ -884,7 +920,7 @@ public class UserProcess {
     	UserKernel.pCountMutex.V();
     }
     
-    protected OpenFile[] fd;
+    
 
     /** The program being run by this process. */
     protected Coff coff;
@@ -896,14 +932,17 @@ public class UserProcess {
 
     /** The number of pages in the program's stack. */
     protected final int stackPages = 8;
-    
+
     private int initialPC, initialSP;
     private int argc, argv;
 	
     private static final int pageSize = Processor.pageSize;
     private static final char dbgProcess = 'a';
+
+
     
-    protected int pID;
+    protected OpenFile[] fd;
+    protected int pid;
     
     protected Hashtable<Integer, UserProcess> children = new Hashtable<Integer, UserProcess>();
     
