@@ -39,7 +39,7 @@ public class UserKernel extends ThreadedKernel {
 		int numberOfPages = Machine.processor().getNumPhysPages();
 		
 		for (int i = 0; i < numberOfPages; i++) {
-			pageLinkedList.add(new TranslationEntry(0,num,false,false,false,false));
+			pageLinkedList.add(new TranslationEntry(0,i,false,false,false,false));
 		}
 		
 		lock = new Lock();
@@ -180,6 +180,7 @@ public class UserKernel extends ThreadedKernel {
 
     // dummy variables to make javac smarter
     private static Coff dummy1 = null;
+    static int pid;
     
     public LinkedList<TranslationEntry> freePageList;
     public Lock pageLock;

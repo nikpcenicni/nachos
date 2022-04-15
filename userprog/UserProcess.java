@@ -233,7 +233,7 @@ public class UserProcess {
 		Lib.assertTrue(offset >= 0 && length >= 0 && offset+length <= data.length);
 		
 		// Acquire lock
-		lock.aquire();
+    	lock.acquire();
 	
 		byte[] memory = Machine.processor().getMemory();
 		
@@ -370,7 +370,7 @@ public class UserProcess {
 		// Store page table in variable
 		pageTable = ((UserKernel)Kernel.kernel).getPages(numPages);
 		
-		if (pageTable == 0) {
+		if (pageTable == null) {
 			// Close the coff
 			coff.close();
 			
@@ -939,7 +939,7 @@ public class UserProcess {
     private static final int pageSize = Processor.pageSize;
     private static final char dbgProcess = 'a';
 
-
+    
     
     protected OpenFile[] fd;
     protected int pid;
@@ -951,5 +951,6 @@ public class UserProcess {
     
     protected Integer exitStatus;
     protected Lock statusLock;
+    protected Lock lock;
     protected Condition joinCond;
 }
