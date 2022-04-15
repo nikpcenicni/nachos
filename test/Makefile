@@ -30,7 +30,7 @@ STDLIB_O = start.o stdio.o stdlib.o
 LIB = assert atoi printf readline stdio strncmp strcat strcmp strcpy strlen memcpy memset
 NLIB = libnachos.a
 
-TARGETS = halt sh matmult sort echo cat cp mv rm #chat chatserver
+TARGETS = halt sh matmult sort echo cat cp mv rm syscallTests #chat chatserver
 
 .SECONDARY: $(patsubst %.c,%.o,$(wildcard *.c))
 
@@ -58,7 +58,3 @@ start.o: start.s syscall.h
 %.coff: %.o $(NLIB)
 	$(LD) $(LDFLAGS) -o $@ $< start.o -lnachos
 
-test.coff: ./syscallTests.c ./openfiletest.c
-	$(CC) $(CFLAGS) -c $?
-	$(LD) $(LDFLAGS) -o openfiletest.coff openfiletest.o start.o -lnachos
-	$(LD) $(LDFLAGS) -o syscallTests.coff syscallTests.o start.o -lnachos
