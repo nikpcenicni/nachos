@@ -16,7 +16,7 @@
 #define	syscallExit		1
 #define	syscallExec		2
 #define	syscallJoin		3
-#define	syscallCreate		4
+#define	syscallCreat		4
 #define	syscallOpen		5
 #define	syscallRead		6
 #define	syscallWrite		7

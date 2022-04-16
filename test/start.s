@@ -58,7 +58,7 @@ name:				; \
 	SYSCALLSTUB(exit, syscallExit)
 	SYSCALLSTUB(exec, syscallExec)
 	SYSCALLSTUB(join, syscallJoin)
-	SYSCALLSTUB(creat, syscallCreate)
+	SYSCALLSTUB(creat, syscallCreat)
 	SYSCALLSTUB(open, syscallOpen)
 	SYSCALLSTUB(read, syscallRead)
 	SYSCALLSTUB(write, syscallWrite)
