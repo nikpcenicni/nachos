@@ -41,7 +41,7 @@ void route(int test, char dbg_flag) {
         case 0:
             printf("File Syscall Test 1: Started \n");
             printf("File Syscall Test 1: creates a file and checks syscall create works\n");
-            status = create(TESTFILE);
+            status = creat(TESTFILE);
             if (status == -1) {
                 printf("File Syscall Test 1: Failed to create file %s \n", TESTFILE);
                 exit(-1);
@@ -56,7 +56,7 @@ void route(int test, char dbg_flag) {
             printf("File Syscall Test 2: Call syscall create/close/unlink and checks functionality\n");
 
             printf("File Syscall Test 2: Call syscall create to creat file %s\n", TESTFILE2);
-            fd = create(TESTFILE2);
+            fd = creat(TESTFILE2);
             if (fd == -1) {
                 printf("File Syscall Test 2: Failed to create file %s \n", TESTFILE2);
                 exit(-1);
@@ -73,7 +73,7 @@ void route(int test, char dbg_flag) {
             }
 
             printf("File Syscall Test 2: Call syscall create again to creat file %s\n", TESTFILE2);
-            fd = create(TESTFILE2);
+            fd = creat(TESTFILE2);
             if (fd == -1) {
                 printf("File Syscall Test 2: Failed to create file %s \n", TESTFILE2);
                 exit(-1);
